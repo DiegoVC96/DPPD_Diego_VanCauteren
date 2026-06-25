@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+@theme {
+  /* Escala corporativa de identidad DriveFlow */
+  --color-brand-primary: var(--color-blue-600);    /* #2563EB - Botones y Acentos */
+  --color-brand-dark: var(--color-slate-900);      /* #0F172A - Header, Footer y Sidebar */
+  --color-brand-bg: var(--color-slate-50);         /* #F8FAFC - Fondo del cuerpo principal */
+  --color-brand-border: var(--color-slate-200);   /* #E2E8F0 - Separadores y Tarjetas */
+}
