@@ -5,7 +5,7 @@
 ---
 
 ## 📄 1. Definición del Proyecto
-**DriveFlow** es una solución de software diseñada para optimizar y automatizar el negocio de alquiler y gestión de flotas vehiculares. 
+**DriveFlow** es una solución de software de nivel empresarial (*Enterprise*) diseñada para optimizar y automatizar el negocio de alquiler y gestión de flotas vehiculares. 
 
 El núcleo técnico de la aplicación está enfocado en la **resolución de concurrencia y el manejo crítico de disponibilidad de servicios**. Evita de forma algorítmica las sobre-reservas (*overbooking*) en bloques cronológicos compartidos. Proporciona una interfaz fluida, limpia y responsiva para el cliente, junto con una consola administrativa aislada de alta seguridad para el operador del negocio.
 
@@ -41,7 +41,25 @@ Basado rigurosamente en las Historias de Usuario (US) cubiertas en este ciclo, s
 | **CP-09** | US #9: Panel Admin | Intentar ingresar a la URL `/administración` desde un smartphone. | El sistema detecta el ancho de pantalla menor a 1024px, bloquea el renderizado y muestra el aviso de "Panel no disponible en móviles". | **PASSED** |
 | **CP-10** | US #10: Listar | Ingresar a la sub-vista de inventario de la consola. | Se renderiza una tabla limpia con las tres columnas requeridas por el negocio de forma estricta: `Id`, `Nombre` y `Acciones`. | **PASSED** |
 | **CP-11** | US #11: Eliminar | Hacer clic en la papelera de una fila y presionar "No, mantener". | El modal informativo se cierra fluidamente y el registro permanece intacto en la base de datos MySQL de XAMPP sin sufrir alteraciones. | **PASSED** |
-| **CP-B1** | USB #1: Editar | Confirmar el modal de edición y mutar el precio por día de un vehículo. | Los datos viajan por el método `PUT`, el backend aplica Jakarta Validation y la grilla del cliente se refresca automáticamente en caliente. | **PASSED** |
+| **CP-12** | USB #1: Editar | Confirmar el modal de edición y mutar el precio por día de un vehículo. | Los datos viajan por el método `PUT`, el backend aplica Jakarta Validation y la grilla del cliente se refresca automáticamente en caliente. | **PASSED** |
+
+## 🛣️ Plan de Pruebas y Resultados (Sprint 2)
+Basado en las nuevas lógicas relacionales, criptográficas y de seguridad implementadas en este ciclo, se diseñaron y ejecutaron los siguientes casos de prueba en caliente, obteniendo una **tasa de éxito del 100%**:
+
+| ID Caso | Historia de Usuario | Descripción del Caso de Prueba | Criterio de Aceptación | Estado |
+| :--- | :--- | :--- | :--- | :---: |
+| **CP-13** | US #12: Categorizar | Registrar un nuevo vehículo seleccionando una familia en el combo desplegable. | El payload envía el `categoriaId` de forma numérica saneada (`parseInt`) y XAMPP crea la clave foránea relacional sin arrojar un HTTP 400. | **PASSED** |
+| **CP-14** | US #13: Registro | Crear una cuenta de usuario con un correo electrónico mal formateado (ej: `juan.perez#gmail`). | Jakarta Validation intercepta la petición en red, el `@ControllerAdvice` mapea el fallo y el formulario en React pinta el mensaje semántico exacto debajo del input. | **PASSED** |
+| **CP-15** | US #14: Identificar | Iniciar sesión con credenciales correctas en la ventana modal de acceso. | El Backend procesa y empareja la clave mediante `passwordEncoder.matches`, el `AuthContext` centraliza la sesión en Lazy Mode y el Header renderiza el avatar circular con las iniciales. | **PASSED** |
+| **CP-16** | US #15: Cerrar Sesión | Pulsar la opción "Cerrar sesión" dispuesta verticalmente debajo del avatar. | La clave `df_session` se purga atómicamente del `localStorage`, el estado de React muta a anónimo y el Header restituye los botones de ingreso convencionales de forma inmediata. | **PASSED** |
+| **CP-17** | US #16: Roles Admin | Ingresar a la sub-vista "Usuarios y Roles" en la consola e interactuar con el botón de rango. | Se dispara una petición `PATCH` al servidor que conmuta el enumerado `Rol` en MySQL. El botón cambia dinámicamente de "Hacer Admin" a "Quitar Admin" modificando los privilegios en caliente. | **PASSED** |
+| **CP-18** | Criptografía (Core) | Inspeccionar la tabla `usuarios` en phpMyAdmin tras dar de alta una cuenta. | La columna `password` almacena de forma inalterable un hash criptográfico irreversible de 60 caracteres generado por el algoritmo **BCrypt**, eliminando el texto plano. | **PASSED** |
+| **CP-19** | US #17: Atributos | Intentar registrar una característica con un nombre que ya existe en el maestro. | El servicio del Backend arroja un `NombreDuplicadoException` controlado, devolviendo al cliente un estado estructurado HTTP 409 Conflict. | **PASSED** |
+| **CP-20** | US #18: Ver Atributos | Abrir la vista pública de detalle de un automóvil con equipamiento asignado. | Se renderiza un bloque independiente titulado "Características" que dibuja los iconos vectoriales de Lucide correspondientes de manera fluida y con grilla responsiva. | **PASSED** |
+| **CP-21** | US #19: Notificación | Completar el formulario de registro de un cliente nuevo. | Spring Mail intercepta el evento e invoca al `EmailService` de forma asíncrona delegando el despacho HTML premium a los **Virtual Threads de Java 26** sin congelar la UI. | **PASSED** |
+| **CP-22** | US #20: Sección Filtro | Seleccionar simultáneamente las tarjetas de categorías 'SUV' y 'Eléctricos' en el Home. | React Router orquesta los estados en red concatenando los filtros múltiples en la URL. El catálogo reduce la muestra e inyecta la barra informativa detallando el conteo de coincidencias sobre el inventario global. | **PASSED** |
+| **CP-23** | US #21: Crear Familia | Guardar una nueva categoría rellenando el formulario de la consola administrativa. | El objeto viaja por el método `POST` inyectando el título, la descripción, el icono y la `urlImagen` representativa de forma atómica en XAMPP. | **PASSED** |
+| **CP-24** | USB #2: CRUD Familias | Pulsar la papelera de una categoría en la lista y cancelar la confirmación del modal. | El puntero de control del modal se vacía restituyendo el foco de la tabla original de inmediato, impidiendo alteraciones de red y resguardando la integridad referencial. | **PASSED** |
 
 ---
 

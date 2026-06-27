@@ -29,10 +29,10 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
   if (cargando) return <div className="text-center py-20 font-medium">Cargando especificaciones...</div>;
   if (error) return <div className="text-center py-20 text-red-500">⚠️ Error: {error}</div>;
 
-  // Aseguramos tener un array controlado para evitar roturas visuales
+  // Array controlado para evitar roturas visuales
   const imagenes = vehiculo.imagenes && vehiculo.imagenes.length > 0 
     ? vehiculo.imagenes 
-    : ['https://unsplash.com']; 
+    : ['https://w7.pngwing.com/pngs/766/256/png-transparent-car-sport-utility-vehicle-hand-drawn-cartoon-car-material-cartoon-character-compact-car-glass.png']; 
 
   const abrirModalEnImagen = (index) => {
     setIndiceImagenActiva(index);
@@ -64,60 +64,78 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
       </div>
 
       {/* REQUERIMIENTO STRICT US #6: GALERÍA DE IMÁGENES EN MOSAICO 50/50 INTEGRAL */}
-<div className="w-full bg-white border border-brand-border p-3 rounded-3xl shadow-xs mb-8">
+      <div className="w-full bg-white border border-brand-border p-3 rounded-3xl shadow-xs mb-8">
   
-  {/* CONTENEDOR MAESTRO DE LA GALERÍA: 
-      - Móviles: Altura automática para evitar desbordes.
-      - Escritorios (lg): Grilla simétrica de dos mitades exactas. */}
-  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-auto relative rounded-2xl overflow-hidden">
+        {/* CONTENEDOR MAESTRO DE LA GALERÍA: 
+        - Móviles: Altura automática para evitar desbordes.
+        - Escritorios (lg): Grilla simétrica de dos mitades exactas. */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-auto relative rounded-2xl overflow-hidden">
     
-    {/* Mitad Izquierda: Foto Principal con Fondo Studio Premium */}
-<div 
-  onClick={() => abrirModalEnImagen(0)}
-  className="w-full h-64 md:h-80 lg:h-100 cursor-pointer relative overflow-hidden group border border-slate-200 rounded-xl lg:rounded-none bg-slate-950 flex items-center justify-center"
->
-  <img 
-    src={imagenes[0]} 
-    alt="Vista principal del vehículo" 
-    className="w-full h-full object-contain group-hover:scale-101 transition-transform duration-500" 
-  />
-  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-</div>
+          {/* Mitad Izquierda: Foto Principal con Fondo */}
+          <div 
+            onClick={() => abrirModalEnImagen(0)}
+            className="w-full h-64 md:h-80 lg:h-100 cursor-pointer relative overflow-hidden group border border-slate-200 rounded-xl lg:rounded-none bg-slate-950 flex items-center justify-center"
+            >
+            <img 
+              src={imagenes[0]} 
+              alt="Vista principal del vehículo" 
+              className="w-full h-full object-contain group-hover:scale-101 transition-transform duration-500" 
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+          </div>
 
-    {/* Mitad Derecha: Miniaturas con Fondo Studio Premium */}
-<div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-3 h-100 w-full">
-  {[1, 2, 3, 4].map((index) => (
-    <div 
-      key={index}
-      onClick={() => abrirModalEnImagen(index < imagenes.length ? index : 0)}
-      className="w-full h-full cursor-pointer relative overflow-hidden group border border-slate-200 rounded-xl bg-slate-950 flex items-center justify-center"
-    >
-      {index < imagenes.length ? (
-        <img 
-          src={imagenes[index]} 
-          alt={`Detalle multimedia ${index}`} 
-          className="w-full h-full object-contain group-hover:scale-102 transition-transform duration-500" 
-        />
-      ) : (
-        <div className="text-slate-600 flex flex-col items-center gap-1 font-mono text-[9px] uppercase font-bold tracking-wider">
-          <span>DriveFlow View</span>
+          {/* Mitad Derecha: Miniaturas con Fondo */}
+          <div className="hidden lg:grid grid-cols-2 grid-rows-2 gap-3 h-100 w-full">
+            {[1, 2, 3, 4].map((index) => (
+              <div 
+                key={index}
+                onClick={() => abrirModalEnImagen(index < imagenes.length ? index : 0)}
+                className="w-full h-full cursor-pointer relative overflow-hidden group border border-slate-200 rounded-xl bg-slate-950 flex items-center justify-center"
+                >
+                {index < imagenes.length ? (
+                  <img 
+                    src={imagenes[index]} 
+                    alt={`Detalle multimedia ${index}`} 
+                    className="w-full h-full object-contain group-hover:scale-102 transition-transform duration-500" 
+                  />
+                ) : (
+                  <div className="text-slate-600 flex flex-col items-center gap-1 font-mono text-[9px] uppercase font-bold tracking-wider">
+                    <span>DriveFlow View</span>
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+              </div>
+            ))}
+          </div>
+
+          {/* BOTÓN "VER MÁS": Posicionado de forma flotante en la región inferior derecha */}
+          <button 
+            onClick={() => abrirModalEnImagen(0)}
+            className="absolute bottom-4 right-4 bg-brand-dark/90 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-2 border border-slate-700 backdrop-blur-xs hover:scale-102 z-10"
+            >
+            <span>Ver más</span>
+          </button>
         </div>
-      )}
-      <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
-    </div>
-  ))}
-</div>
+      </div>
 
-    {/* BOTÓN "VER MÁS": Posicionado de forma flotante en la región inferior derecha */}
-    <button 
-      onClick={() => abrirModalEnImagen(0)}
-      className="absolute bottom-4 right-4 bg-brand-dark/90 hover:bg-slate-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all cursor-pointer flex items-center space-x-2 border border-slate-700 backdrop-blur-xs hover:scale-102 z-10"
-    >
-      <span>Ver más</span>
-    </button>
-  </div>
-
-</div>
+      <div className="w-full bg-white border border-brand-border p-6 rounded-2xl shadow-xs mb-8">
+        <h2 className="text-base font-black text-brand-dark uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
+          Características
+        </h2>
+        
+        {/* GRILLA RESPONSIVA: 2 columnas en móvil, 3 en tablet, 4 en pantallas de escritorio */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+          {vehiculo.caracteristicas && vehiculo.caracteristicas.map((carac) => (
+            <div key={carac.id} className="flex items-center space-x-3 bg-slate-50 border border-slate-100 p-3 rounded-xl transition-all hover:bg-blue-50/50 group select-none">
+              {/* RENDERIZADO DIRECTO POR URL DEL ICONO DE LA CARACTERÍSTICA */}
+              <div className="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center p-1.5 shadow-2xs shrink-0">
+                <img src={carac.urlImagen} alt="" className="w-full h-full object-contain" />
+              </div>
+              <span className="text-xs font-bold text-slate-600 truncate">{carac.nombre}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
 
       {/* 3. BODY DEL PRODUCTO: Descripción comercial y reserva */}
@@ -142,7 +160,7 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
         </div>
       </div>
 
-      {/* VISOR EN PANTALLA COMPLETA (MODAL SLIDER) */}
+      {/* VISOR EN PANTALLA COMPLETA */}
       {modalAbierto && (
         <div className="fixed inset-0 bg-brand-dark/98 z-50 flex flex-col items-center justify-center p-4 backdrop-blur-md">
           <div className="absolute top-4 left-4 right-4 flex justify-between items-center text-white max-w-7xl mx-auto w-full px-4">

@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { Eye, Trash2, Edit, AlertCircle, AlertTriangle, HelpCircle } from 'lucide-react';
 import FormularioEditarProducto from './FormularioEditarProducto';
+import { AuthContext } from '../context/AuthContextStore'; 
 
 export default function TablaProductosAdmin({ onVerDetalle }) {
+  const { usuario } = useContext(AuthContext); 
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
@@ -15,7 +17,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
   const [vehiculoParaConfirmarEditar, setVehiculoParaConfirmarEditar] = useState(null);
   const [vehiculoEnEdicion, setVehiculoEnEdicion] = useState(null);
 
-  // Función encargada de sincronizar los datos reales desde el Backend de Java 26
+  // Sincronización asíncrona adaptada al backend con paginación DTO de Spring Boot
   const cargarInventarioFlota = () => {
     fetch('http://localhost:8080/api/vehiculos/paginados?page=0&size=50')
       .then((res) => {
@@ -36,7 +38,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
     cargarInventarioFlota();
   }, []);
 
-  // LÓGICA DE CONTROL: ELIMINAR PRODUCTO 
+  // CONTROLADOR: ELIMINAR PRODUCTO (US #11)
   const solicitarEliminacion = (id, nombre) => {
     setIdParaEliminar(id);
     setNombreParaEliminar(nombre);
@@ -49,8 +51,13 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
 
   const confirmarEliminacion = async () => {
     try {
+      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
+
       const respuesta = await fetch(`http://localhost:8080/api/vehiculos/${idParaEliminar}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Basic ${credencialesBase64}`
+        }
       });
 
       if (!respuesta.ok) throw new Error('No se pudo remover el recurso del servidor.');
@@ -62,7 +69,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
     }
   };
 
-  // LÓGICA DE CONTROL: EDITAR PRODUCTO 
+  // CONTROLADOR: EDITAR PRODUCTO (US BONUS #1)
   const solicitarEdicion = (auto) => {
     setVehiculoParaConfirmarEditar(auto);
   };
@@ -79,10 +86,9 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
   const finalizarEdicionConExito = () => {
     setVehiculoEnEdicion(null);
     setCargando(true);
-    cargarInventarioFlota(); // Recarga los nombres y precios modificados desde XAMPP
+    cargarInventarioFlota(); 
   };
 
-  // INTERRUPTOR DE VISTA ASÍNCRONA: Renderiza el formulario si se aceptó la edición
   if (vehiculoEnEdicion) {
     return (
       <FormularioEditarProducto 
@@ -126,7 +132,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-brand-border">
-              {/* LAS TRES COLUMNAS EXIGIDAS */}
+              {/* LAS TRES COLUMNAS EXIGIDAS EN LA US #10 */}
               <th className="py-3.5 px-6 w-24">Id</th>
               <th className="py-3.5 px-6">Nombre</th>
               <th className="py-3.5 px-6 text-right w-44">Acciones</th>
@@ -142,39 +148,59 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
             ) : (
               productos.map((auto) => (
                 <tr key={auto.id} className="hover:bg-slate-50/50 transition-colors">
-                  {/* Columna Id */}
+                  
+                  {/* COLUMNA 1: ID */}
                   <td className="py-3.5 px-6 font-mono text-xs font-bold text-slate-400">
                     #{auto.id}
                   </td>
                   
-                  {/* Columna Nombre */}
+                  {/* COLUMNA 2: NOMBRE, MINIATURA Y CATEGORÍA */}
                   <td className="py-3.5 px-6 font-semibold">
                     <div className="flex items-center space-x-3">
                       {auto.imagenes && auto.imagenes.length > 0 && (
                         <img 
-                          src={auto.imagenes[0]} 
+                          src={Array.isArray(auto.imagenes) ? auto.imagenes[0] : auto.imagenes.split(',')[0]} 
                           alt="" 
                           className="w-8 h-8 object-cover rounded-lg border border-slate-200 bg-slate-100 shrink-0"
+                          onError={(e) => {
+                            e.target.src = 'https://w7.pngwing.com/pngs/766/256/png-transparent-car-sport-utility-vehicle-hand-drawn-cartoon-car-material-cartoon-character-compact-car-glass.png';
+                          }}
                         />
                       )}
-                      <span className="truncate max-w-md">{auto.nombre}</span>
+                      <div className="flex flex-col">
+                        <span className="truncate max-w-md">{auto.nombre}</span>
+                        
+                        {/* Visualización/Asignación de Categoría (US #12) */}
+                        {auto.categoria ? (
+                          <span className="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded mt-0.5 w-max uppercase tracking-wider">
+                            {auto.categoria.nombre}
+                          </span>
+                        ) : (
+                          <button 
+                            onClick={() => solicitarEdicion(auto)}
+                            className="text-[10px] text-brand-primary font-bold underline mt-0.5 w-max cursor-pointer hover:text-blue-700"
+                          >
+                            + Asignar categoría
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </td>
                   
-                  {/* Columna Acciones */}
+                  {/* COLUMNA 3: ACCIONES CERRADAS DE FORMA SIMÉTRICA */}
                   <td className="py-3.5 px-6 text-right">
                     <div className="flex items-center justify-end space-x-1">
-
-                      {/* ACCIÓN ACTUALIZADA: Redirige al detalle al hacer clic */}
+                      
+                      {/* Ver detalle */}
                       <button 
                         onClick={() => onVerDetalle(auto.id)}
                         title="Ver detalle de especificaciones"
                         className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-brand-primary rounded-lg transition-colors cursor-pointer"
-                        >
+                      >
                         <Eye size={16} />
                       </button>
                       
-                      {/* ACCION DE EDITAR PRODUCTO POR FILA */}
+                      {/* Editar */}
                       <button 
                         onClick={() => solicitarEdicion(auto)}
                         title="Editar parámetros"
@@ -183,7 +209,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
                         <Edit size={16} />
                       </button>
 
-                      {/* ACCION DE ELIMINAR PRODUCTO POR FILA */}
+                      {/* Eliminar */}
                       <button 
                         onClick={() => solicitarEliminacion(auto.id, auto.nombre)}
                         title="Eliminar vehículo"
@@ -193,6 +219,7 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
                       </button>
                     </div>
                   </td>
+
                 </tr>
               ))
             )}

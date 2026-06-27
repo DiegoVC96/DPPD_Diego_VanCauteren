@@ -18,5 +18,9 @@ public record VehiculoRequestDTO(
     BigDecimal precioPorDia,
 
     @NotEmpty(message = "Debe registrar al menos una imagen para el vehículo")
-    List<String> imagenes
+    List<String> imagenes,
+
+    Long categoriaId,
+
+    List<Long> caracteristicasIds
 ) {}

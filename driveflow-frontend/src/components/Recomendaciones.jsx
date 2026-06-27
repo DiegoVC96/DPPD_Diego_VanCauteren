@@ -1,81 +1,82 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronsLeft } from 'lucide-react';
 
-export default function Recomendaciones({ onSeleccionarVehiculo }) {
+export default function Recomendaciones({ onSeleccionarVehiculo, filtrosCategorias }) {
   const [vehiculos, setVehiculos] = useState([]);
   const [paginaActual, setPaginaActual] = useState(0);
   const [totalPaginas, setTotalPaginas] = useState(0);
+  const [productosFiltradosCount, setProductosFiltradosCount] = useState(0);
+  const [totalProductosCatalogo, setTotalProductosCatalogo] = useState(0);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    let activo = true;
+    fetch('http://localhost:8080/api/vehiculos/paginados?size=100')
+      .then(res => res.json())
+      .then(data => setTotalProductosCatalogo(data.totalElements || 0))
+      .catch(() => {});
+  }, []);
 
-    fetch(`http://localhost:8080/api/vehiculos/paginados?page=${paginaActual}&size=10`)
-      .then((respuesta) => {
-        if (!respuesta.ok) throw new Error('Error al conectar con el servidor');
-        return respuesta.json();
-      })
+  useEffect(() => {
+    let activo = true;
+    const stringFiltros = filtrosCategorias.length > 0 ? `&categorias=${filtrosCategorias.join(',')}` : '';
+
+    fetch(`http://localhost:8080/api/vehiculos/paginados?page=${paginaActual}&size=10${stringFiltros}`)
+      .then((res) => { if (!res.ok) throw new Error('Error de red'); return res.json(); })
       .then((data) => {
-        // Solo actualizamos el estado si el componente sigue montado en la misma página
         if (activo) {
           setVehiculos(data.content || []);
           setTotalPaginas(data.totalPages || 0);
-          setCargando(false); // Seteamos la carga directamente en la resolución asíncrona
-        }
-      })
-      .catch((err) => {
-        if (activo) {
-          setError(err.message);
+          setProductosFiltradosCount(data.totalElements || 0); 
           setCargando(false);
         }
-      });
+      })
+      .catch((err) => { if (activo) { setError(err.message); setCargando(false); } });
 
-    // Cancela el efecto si el usuario hace clic rápido en "Siguiente"
-    return () => {
-      activo = false;
-    };
-  }, [paginaActual]); // El efecto escucha limpiamente los cambios de página
+    return () => { activo = false; };
+  }, [paginaActual, filtrosCategorias]); 
 
-  // Función envoltorio para cambiar la página que asume la mutación de estado de carga de forma segura
   const cambiarPagina = (nuevaPagina) => {
-    setError(null);
-    setCargando(true); // Se ejecuta en el hilo de interacción del usuario, no dentro del cuerpo del efecto
+    setCargando(true);
     setPaginaActual(nuevaPagina);
   };
 
-  if (cargando) {
-    return (
-      <div className="w-full text-center py-12">
-        <div className="animate-spin inline-block w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full text-brand-primary"></div>
-        <p className="text-sm text-slate-400 mt-2">Sincronizando flota...</p>
-      </div>
-    );
-  }
-
-  if (error) return <div className="text-center py-10 text-red-500">⚠️ Error: {error}</div>;
-  if (vehiculos.length === 0) return <div className="text-center py-10 text-slate-400">No hay vehículos.</div>;
+  if (cargando) return <div className="text-center py-10"><div className="animate-spin inline-block w-8 h-8 border-4 border-brand-primary border-t-transparent rounded-full text-brand-primary"></div></div>;
+  if (error) return <div className="text-center py-10 text-red-500">⚠️ Error al sincronizar resultados: {error}</div>;
 
   return (
     <section className="w-full flex flex-col">
-      <div className="flex justify-between items-baseline mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-6 gap-2">
         <h2 className="text-xl font-extrabold tracking-tight text-brand-dark md:text-2xl">
-          Explora nuestra flota
+          Resultados de búsqueda
         </h2>
-        <span className="text-xs text-slate-400 font-bold bg-white border border-brand-border px-3 py-1.5 rounded-xl shadow-xs">
-          Página {paginaActual + 1} de {totalPaginas}
-        </span>
+        
+        {/* Mostrar cantidad que cumple los filtros y cantidad total */}
+        <div className="text-xs text-slate-500 font-medium bg-white border border-brand-border px-3 py-2 rounded-xl shadow-2xs flex items-center space-x-2 w-max select-none">
+          <span className="font-bold text-brand-primary">{productosFiltradosCount} encontrados</span>
+          <span className="text-slate-300">|</span>
+          <span>{totalProductosCatalogo} vehículos en catálogo total</span>
+        </div>
       </div>
 
       {/* DISEÑO EXIGIDO EN US #4: 2 columnas en escritorios (Máximo 5 filas por los 10 items) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         {vehiculos.map((auto) => (
           <div key={auto.id} className="bg-white border border-brand-border rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all duration-300 flex flex-col sm:flex-row h-auto sm:h-48 group">
-            <div className="w-full sm:w-44 h-48 sm:h-full bg-slate-100 overflow-hidden shrink-0">
-              {auto.imagenes && auto.imagenes.length > 0 ? (
-                <img src={auto.imagenes[0]} alt={auto.nombre} className="w-full h-full object-cover" />
+            <div className="w-full sm:w-44 h-48 sm:h-full bg-slate-100 overflow-hidden shrink-0 relative flex items-center justify-center">
+              {auto.imagenes && auto.imagenes.length > 0 && String(auto.imagenes).trim() !== '' ? (
+                <img 
+                  src={Array.isArray(auto.imagenes) ? auto.imagenes[0].trim() : String(auto.imagenes).split(',')[0].trim()} 
+                  alt={auto.nombre} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                  onError={(e) => {
+                    e.target.src = 'https://unsplash.com';
+                  }}
+                />
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs">Sin foto</div>
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 font-mono text-[10px] uppercase font-bold">
+                  <span>No Photo</span>
+                </div>
               )}
             </div>
             <div className="p-5 flex flex-col justify-between grow min-w-0">
@@ -95,7 +96,7 @@ export default function Recomendaciones({ onSeleccionarVehiculo }) {
         ))}
       </div>
 
-      {/* BOTONERA ACTUALIZADA LLAMANDO A LA FUNCIÓN SEGURA 'cambiarPagina' */}
+      {/* BOTONERA LLAMANDO A LA FUNCIÓN SEGURA 'cambiarPagina' */}
       <div className="flex items-center justify-center space-x-2 bg-white border border-brand-border py-3 px-4 rounded-2xl shadow-xs max-w-md mx-auto w-full">
         
         {/* Botón Inicio */}

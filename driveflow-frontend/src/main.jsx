@@ -4,9 +4,11 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import App from './App';
 import PanelAdmin from './components/PanelAdmin';
 import './index.css';
+import { AuthProvider } from './context/AuthContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <AuthProvider>
     <BrowserRouter>
       <Routes>
         {/* URL Principal: Renderiza el Home de clientes (Buscador, Categorías, Catálogo) */}
@@ -16,5 +18,6 @@ createRoot(document.getElementById('root')).render(
         <Route path="/administración" element={<PanelAdmin />} />
       </Routes>
     </BrowserRouter>
+    </AuthProvider>
   </StrictMode>
 );

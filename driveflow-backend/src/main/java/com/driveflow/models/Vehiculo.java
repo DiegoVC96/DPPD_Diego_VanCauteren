@@ -29,9 +29,22 @@ public class Vehiculo {
     @Column(nullable = false, name = "precio_por_dia")
     private BigDecimal precioPorDia;
 
-    // Relación uno a muchos para soportar "una o más imágenes" por producto
+    // Relación uno a muchos para soportar una o más imágenes por producto
     @ElementCollection
     @CollectionTable(name = "vehiculo_imagenes", joinColumns = @JoinColumn(name = "vehiculo_id"))
     @Column(name = "url_imagen", nullable = false, columnDefinition = "TEXT")
     private List<String> imagenes = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "categoria_id", nullable = true) 
+    private Categoria categoria;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "vehiculo_caracteristicas",
+        joinColumns = @JoinColumn(name = "vehiculo_id"),
+        inverseJoinColumns = @JoinColumn(name = "caracteristica_id")
+    )
+    private List<Caracteristica> caracteristicas = new java.util.ArrayList<>();
+
 }

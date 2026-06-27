@@ -17,7 +17,7 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Habilita explícitamente el origen de tu puerto de Vite
+        // Habilita el origen de tu puerto de Vite
         config.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
         
         // Permite credenciales, cabeceras y todos los métodos operativos requeridos

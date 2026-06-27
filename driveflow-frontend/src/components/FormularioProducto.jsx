@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useContext} from 'react';
+import { AuthContext } from '../context/AuthContextStore';
 
 export default function FormularioProducto({ onCerrar }) {
+  const { usuario } = useContext(AuthContext);
   const [nombre, setNombre] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [precio, setPrecio] = useState('');
@@ -8,6 +10,30 @@ export default function FormularioProducto({ onCerrar }) {
   const [listaImagenes, setListaImagenes] = useState([]);
   const [errorServidor, setErrorServidor] = useState('');
   const [exito, setExito] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaId, setCategoriaId] = useState('');
+  const [listaCaracteristicas, setListaCaracteristicas] = useState([]);
+  const [caracteristicasSeleccionadas, setCaracteristicasSeleccionadas] = useState([]);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/caracteristicas').then(res => res.json()).then(data => setListaCaracteristicas(data));
+  }, []);
+
+  const manejarCheckboxChange = (id) => {
+    if (caracteristicasSeleccionadas.includes(id)) {
+      setCaracteristicasSeleccionadas(caracteristicasSeleccionadas.filter(item => item !== id));
+    } else {
+      setCaracteristicasSeleccionadas([...caracteristicasSeleccionadas, id]);
+    }
+  };
+
+  // Carga las categorías de la base de datos al montar el componente
+  useEffect(() => {
+    fetch('http://localhost:8080/api/categorias')
+      .then(res => res.json())
+      .then(data => setCategorias(data))
+      .catch(err => console.error("Error cargando categorías", err));
+  }, []);
 
   // Añadir una URL de imagen a la lista temporal
   const agregarImagenLista = () => {
@@ -31,29 +57,38 @@ export default function FormularioProducto({ onCerrar }) {
       nombre,
       descripcion,
       precioPorDia: parseFloat(precio),
-      imagenes: listaImagenes
+      imagenes: listaImagenes,
+      categoriaId: categoriaId ? parseInt(categoriaId, 10) : null,
+      caracteristicasIds: caracteristicasSeleccionadas
     };
 
     try {
+      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
+
       const respuesta = await fetch('http://localhost:8080/api/vehiculos', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${credencialesBase64}`
+        },
         body: JSON.stringify(payload)
       });
 
-      const datos = await respuesta.json();
-
       if (!respuesta.ok) {
-        // Atrapa el error de nombre duplicado (HTTP 409 o 400) enviado por el backend
+        if (respuesta.status === 401) {
+          throw new Error('Su sesión ha expirado o sus privilegios de Administrador no son válidos.');
+        }
+        const datos = await respuesta.json();
         throw new Error(datos.mensaje || 'Error al guardar el producto');
       }
 
       setExito(true);
-      // Limpiar formulario
       setNombre('');
       setDescripcion('');
       setPrecio('');
       setListaImagenes([]);
+      setCategoriaId('');
+      setCaracteristicasSeleccionadas([]);
     } catch (err) {
       setErrorServidor(err.message);
     }
@@ -106,6 +141,37 @@ export default function FormularioProducto({ onCerrar }) {
             className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
             placeholder="Ej: 45000"
           />
+        </div>
+
+        <div className="bg-slate-50 border border-brand-border p-4 rounded-xl">
+          <label className="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-wider">Características Disponibles</label>
+            <div className="grid grid-cols-2 gap-3">
+              {listaCaracteristicas.map(c => (
+                <label key={c.id} className="flex items-center space-x-2 text-xs font-semibold cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={caracteristicasSeleccionadas.includes(c.id)}
+                    onChange={() => manejarCheckboxChange(c.id)}
+                    className="rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                  />
+                  <span>{c.nombre}</span>
+                </label>
+              ))}
+            </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Categoría del Vehículo</label>
+          <select 
+            value={categoriaId} 
+            onChange={(e) => setCategoriaId(e.target.value)}
+            className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
+            >
+            <option value="">Seleccione una categoría...</option>
+            {categorias.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+            ))}
+          </select>
         </div>
 
         <div>

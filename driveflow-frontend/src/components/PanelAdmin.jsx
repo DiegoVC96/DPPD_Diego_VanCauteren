@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Car, FolderKanban, ShieldAlert, ArrowLeft, ClipboardList } from 'lucide-react';
+import { Car, FolderKanban, ShieldAlert, ArrowLeft, ClipboardList, Sliders, Users } from 'lucide-react';
 import FormularioProducto from './FormularioProducto';
 import TablaProductosAdmin from './TablaProductosAdmin';
 import DetalleProducto from './DetalleProducto';
+import TablaUsuariosAdmin from './TablaUsuariosAdmin';
+import GestionCaracteristicas from './GestionCaracteristicas';
+import FormularioCategoria from './FormularioCategoria';
+import GestionCategoriasAdmin from './GestionCategoriasAdmin';
 
 export default function PanelAdmin() {
   const [esEscritorio, setEsEscritorio] = useState(window.innerWidth >= 1024);
   const [vehiculoSeleccionadoId, setVehiculoSeleccionadoId] = useState(null);
-  
-  // Seteamos 'lista_productos' como la sub-vista activa por defecto
   const [menuActivo, setMenuActivo] = useState('lista_productos');
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function PanelAdmin() {
 
         <nav className="grow p-4 space-y-1.5 mt-4">
           
-          {/* BOTÓN REQUERIDO: LISTA DE PRODUCTOS */}
+          {/* BOTÓN: LISTA DE PRODUCTOS */}
           <button 
             onClick={() => setMenuActivo('lista_productos')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
@@ -76,6 +78,33 @@ export default function PanelAdmin() {
           </button>
 
           <button 
+            onClick={() => setMenuActivo('caracteristicas')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              menuActivo === 'caracteristicas' ? 'bg-brand-primary text-white' : 'hover:bg-slate-800 hover:text-white'
+            }`}
+            >
+            <Sliders size={18} />
+            <span>Administrar características</span>
+          </button>
+
+          <button 
+            onClick={() => setMenuActivo('agregar_categoria')}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+              menuActivo === 'agregar_categoria' ? 'bg-brand-primary text-white' : 'hover:bg-slate-800 hover:text-white'
+            }`}
+            >
+            <FolderKanban size={18} />
+            <span>Agregar categoría</span>
+          </button>
+
+          <button 
+              onClick={() => { setMenuActivo('usuarios'); setVehiculoSeleccionadoId(null); }}
+              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${menuActivo === 'usuarios' ? 'bg-brand-primary text-white' : 'hover:bg-slate-800 hover:text-white'}`}
+            >
+              <Users size={16} /> <span>Usuarios y Roles</span>
+          </button>
+
+          <button 
             onClick={() => setMenuActivo('categorias')}
             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
               menuActivo === 'categorias' ? 'bg-brand-primary text-white shadow-xs' : 'hover:bg-slate-800 hover:text-white'
@@ -93,52 +122,42 @@ export default function PanelAdmin() {
 
       {/* CUERPO PRINCIPAL O COMPONENT VIEW */}
       <main className="grow ml-64 p-8 lg:p-12 min-h-screen flex flex-col">
-      {/* Cabecera del Panel (Oculta si estamos viendo el detalle para limpiar la UI) */}
-      {vehiculoSeleccionadoId === null && (
-        <div className="mb-8 pb-4 border-b border-brand-border flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-brand-dark">
-              {menuActivo === 'lista_productos' && 'Maestro de Inventario Flota'}
-              {menuActivo === 'registrar_producto' && 'Registrar Nuevo Vehículo'}
-              {menuActivo === 'categorias' && 'Maestro de Categorías'}
-            </h1>
-            <p className="text-xs text-slate-400">Consola centralizada del operador corporativo</p>
-          </div>
-          <button onClick={() => window.location.href = '/'} className="text-xs bg-white border border-brand-border text-slate-600 font-bold py-2 px-4 rounded-xl hover:bg-slate-50 shadow-xs cursor-pointer">
-            Regresar a la tienda
-          </button>
-        </div>
-      )}
-
-      {/* NAVEGADOR INTERNO DE MÓDULOS DE ADMINISTRACIÓN */}
-      <div className="grow">
-        {/* INTERRUPTOR PRINCIPAL: Si hay un ID seleccionado, abre el Detalle en la consola */}
-        {vehiculoSeleccionadoId !== null ? (
-          <DetalleProducto 
-            vehiculoId={vehiculoSeleccionadoId} 
-            onVolver={() => setVehiculoSeleccionadoId(null)} // Al volver, restituye la tabla
-          />
-        ) : (
-          /* Sub-vistas administrativas convencionales */
-          <>
-            {menuActivo === 'lista_productos' && (
-              /* Pasamos la función como prop a la tabla */
-              <TablaProductosAdmin onVerDetalle={setVehiculoSeleccionadoId} />
-            )}
-            
-            {menuActivo === 'registrar_producto' && (
-              <FormularioProducto onCerrar={() => setMenuActivo('lista_productos')} />
-            )}
-            
-            {menuActivo === 'categorias' && (
-              <div className="bg-white border border-brand-border p-8 rounded-2xl text-center text-sm text-slate-400 border-dashed">
-                [Módulo Maestro de Categorías en desarrollo]
-              </div>
-            )}
-          </>
-        )}
+  {/* Cabecera del Panel (Oculta si estamos viendo el detalle para limpiar la UI) */}
+  {vehiculoSeleccionadoId === null && (
+    <div className="mb-8 pb-4 border-b border-brand-border flex justify-between items-center">
+      <div>
+        <h1 className="text-2xl font-black tracking-tight text-brand-dark">
+          {menuActivo === 'lista_productos' && 'Maestro de Inventario Flota'}
+          {menuActivo === 'registrar_producto' && 'Registrar Nuevo Vehículo'}
+          {menuActivo === 'caracteristicas' && 'Administrar Características de Producto'}
+          {menuActivo === 'agregar_categoria' && 'Añadir Nueva Categoría de Vehículos'}
+          {menuActivo === 'categorias' && 'Maestro de Categorías'}
+          {menuActivo === 'usuarios' && 'Seguridad de Usuarios y Roles'}
+        </h1>
+        <p className="text-xs text-slate-400 mt-1">Consola centralizada del operador corporativo</p>
       </div>
-    </main>
+      <button onClick={() => window.location.href = '/'} className="text-xs bg-white border border-brand-border text-slate-600 font-bold py-2 px-4 rounded-xl hover:bg-slate-50 shadow-xs cursor-pointer">
+        Regresar a la tienda
+      </button>
+    </div>
+  )}
+
+  {/* NAVEGADOR INTERNO DE MÓDULOS DE ADMINISTRACIÓN */}
+  <div className="grow">
+    {vehiculoSeleccionadoId !== null ? (
+      <DetalleProducto vehiculoId={vehiculoSeleccionadoId} onVolver={() => setVehiculoSeleccionadoId(null)} />
+    ) : (
+      <>
+        {menuActivo === 'lista_productos' && <TablaProductosAdmin onVerDetalle={setVehiculoSeleccionadoId} />}
+        {menuActivo === 'registrar_producto' && <FormularioProducto onCerrar={() => setMenuActivo('lista_productos')} />}
+        {menuActivo === 'categorias' && <GestionCategoriasAdmin />}
+        {menuActivo === 'caracteristicas' && <GestionCaracteristicas />}
+        {menuActivo === 'agregar_categoria' && <FormularioCategoria onCerrar={() => setMenuActivo('categorias')} />}
+        {menuActivo === 'usuarios' && <TablaUsuariosAdmin />}
+      </>
+    )}
+  </div>
+  </main>
   </div>
   );
 }

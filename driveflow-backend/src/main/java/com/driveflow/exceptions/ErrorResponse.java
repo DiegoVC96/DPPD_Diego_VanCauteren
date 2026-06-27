@@ -7,7 +7,7 @@ public record ErrorResponse(
     int status,
     String mensaje,
     LocalDateTime timestamp,
-    Map<String, String> erroresValidacion // Almacenará campo -> mensaje de error específico
+    Map<String, String> erroresValidacion // Mensaje de error específico
 ) {
     // Constructor secundario conveniente para errores simples sin validación de campos
     public ErrorResponse(int status, String mensaje) {
