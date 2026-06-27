@@ -18,23 +18,25 @@ export default function Recomendaciones({ onSeleccionarVehiculo, filtrosCategori
   }, []);
 
   useEffect(() => {
-    let activo = true;
-    const stringFiltros = filtrosCategorias.length > 0 ? `&categorias=${filtrosCategorias.join(',')}` : '';
+  let activo = true;
+  setTimeout(() => setCargando(true), 0);
 
-    fetch(`http://localhost:8080/api/vehiculos/paginados?page=${paginaActual}&size=10${stringFiltros}`)
-      .then((res) => { if (!res.ok) throw new Error('Error de red'); return res.json(); })
-      .then((data) => {
-        if (activo) {
-          setVehiculos(data.content || []);
-          setTotalPaginas(data.totalPages || 0);
-          setProductosFiltradosCount(data.totalElements || 0); 
-          setCargando(false);
-        }
-      })
-      .catch((err) => { if (activo) { setError(err.message); setCargando(false); } });
+  const stringFiltros = filtrosCategorias && filtrosCategorias.length > 0 ? `&categorias=${filtrosCategorias.join(',')}` : '';
 
-    return () => { activo = false; };
-  }, [paginaActual, filtrosCategorias]); 
+  fetch(`http://localhost:8080/api/vehiculos/paginados?page=${paginaActual}&size=10${stringFiltros}`)
+    .then((res) => { if (!res.ok) throw new Error('Error de red'); return res.json(); })
+    .then((data) => {
+      if (activo) {
+        setVehiculos(data.content || []);
+        setTotalPaginas(data.totalPages || 1); 
+        setProductosFiltradosCount(data.totalElements || 0);
+        setCargando(false);
+      }
+    })
+    .catch((err) => { if (activo) { setError(err.message); setCargando(false); } });
+
+  return () => { activo = false; };
+}, [paginaActual, filtrosCategorias]);
 
   const cambiarPagina = (nuevaPagina) => {
     setCargando(true);

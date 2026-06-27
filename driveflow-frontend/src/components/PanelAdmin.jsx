@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Car, FolderKanban, ShieldAlert, ArrowLeft, ClipboardList, Sliders, Users } from 'lucide-react';
 import FormularioProducto from './FormularioProducto';
 import TablaProductosAdmin from './TablaProductosAdmin';
@@ -7,8 +7,10 @@ import TablaUsuariosAdmin from './TablaUsuariosAdmin';
 import GestionCaracteristicas from './GestionCaracteristicas';
 import FormularioCategoria from './FormularioCategoria';
 import GestionCategoriasAdmin from './GestionCategoriasAdmin';
+import { AuthContext } from '../context/AuthContextStore';
 
 export default function PanelAdmin() {
+  const { usuario } = useContext(AuthContext);
   const [esEscritorio, setEsEscritorio] = useState(window.innerWidth >= 1024);
   const [vehiculoSeleccionadoId, setVehiculoSeleccionadoId] = useState(null);
   const [menuActivo, setMenuActivo] = useState('lista_productos');
@@ -18,6 +20,16 @@ export default function PanelAdmin() {
     window.addEventListener('resize', manejarResize);
     return () => window.removeEventListener('resize', manejarResize);
   }, []);
+
+  useEffect(() => {
+    if (!usuario || usuario.rol !== 'ADMINISTRADOR') {
+      window.location.href = '/';
+    }
+  }, [usuario]);
+
+  if (!usuario || usuario.rol !== 'ADMINISTRADOR') {
+    return <div className="p-6 text-xs font-bold text-red-600">Acceso Denegado. Redireccionando...</div>;
+  }
 
   if (!esEscritorio) {
     return (

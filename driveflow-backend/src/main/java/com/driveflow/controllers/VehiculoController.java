@@ -47,22 +47,16 @@ public class VehiculoController {
         return ResponseEntity.ok(vehiculo);
     }
 
-    // Endpoint de la US #4 actualizado para soportar la US #8 (Paginación)
     @GetMapping("/paginados")
     public ResponseEntity<Page<Vehiculo>> listarVehiculosPaginados(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) List<Long> categorias
+            @RequestParam(required = false) List<Long> categorias,
+            @RequestParam(defaultValue = "false") boolean esAdmin 
         ) {
-            Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-            Page<Vehiculo> resultado = vehiculoService.obtenerVehiculosPaginadosFiltrados(categorias, pageable);
-            return ResponseEntity.ok(resultado);
-    }
-
-    @GetMapping("/aleatorios")
-    public ResponseEntity<List<Vehiculo>> listarVehiculosAleatoriosHome() {
-        List<Vehiculo> lista = vehiculoService.obtenerVehiculosAleatoriosHome();
-        return ResponseEntity.ok(lista);
+        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Page<Vehiculo> resultado = vehiculoService.obtenerVehiculosPaginadosFiltrados(categorias, pageable, esAdmin);
+        return ResponseEntity.ok(resultado);
     }
 
     @PostMapping

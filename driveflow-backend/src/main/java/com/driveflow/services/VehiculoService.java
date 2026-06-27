@@ -74,27 +74,22 @@ public class VehiculoService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Vehiculo> obtenerVehiculosPaginadosFiltrados(List<Long> categoriaIds, Pageable pageable) {
-        if (categoriaIds == null || categoriaIds.isEmpty()) {
-            return vehiculoRepository.findAll(pageable); 
-        } else {
+    public Page<Vehiculo> obtenerVehiculosPaginadosFiltrados(List<Long> categoriaIds, Pageable pageable, boolean esAdmin) {
+        if (categoriaIds != null && !categoriaIds.isEmpty()) {
             return vehiculoRepository.findByCategoriaIdIn(categoriaIds, pageable);
         }
+    
+        if (esAdmin) {
+            return vehiculoRepository.findAll(pageable);
+        }
+    
+        return vehiculoRepository.findAllAleatoriosPaginados(pageable);
     }
 
     @Transactional(readOnly = true)
     public Vehiculo buscarPorId(Long id) {
         return vehiculoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("El vehículo con ID " + id + " no existe."));
-    }
-
-    @Transactional(readOnly = true)
-    public List<Vehiculo> obtenerVehiculosAleatoriosHome() {
-        List<Vehiculo> todos = vehiculoRepository.findAll();
-    
-        java.util.Collections.shuffle(todos);
-    
-        return todos.stream().limit(10).toList();
     }
 
     @Transactional

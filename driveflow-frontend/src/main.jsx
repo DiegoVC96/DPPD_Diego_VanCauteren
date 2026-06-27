@@ -5,6 +5,7 @@ import App from './App';
 import PanelAdmin from './components/PanelAdmin';
 import './index.css';
 import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -15,7 +16,14 @@ createRoot(document.getElementById('root')).render(
         <Route path="/" element={<App />} />
         
         {/* URL Requerida US #9: Aislada y protegida con menú administrativo exclusivo */}
-        <Route path="/administración" element={<PanelAdmin />} />
+        <Route 
+          path="/administración" 
+          element={
+            <ProtectedRoute>
+              <PanelAdmin />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </BrowserRouter>
     </AuthProvider>

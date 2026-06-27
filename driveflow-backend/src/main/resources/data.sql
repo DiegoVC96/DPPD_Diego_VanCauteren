@@ -1,9 +1,9 @@
--- POBLAR MAESTRO DE CATEGORÍAS (Sprint 2 - US #12)
-INSERT IGNORE INTO categorias (id, nombre, descripcion, icono) VALUES 
-(1, 'Sedán', 'Autos compactos y confortables ideales para viajes ejecutivos y trayectos urbanos.', 'Car'),
-(2, 'SUV', 'Vehículos utilitarios deportivos, espaciosos y potentes para terrenos exigentes.', 'Compass'),
-(3, 'Deportivos', 'Modelos exóticos de alta gama, ingeniería avanzada y máxima velocidad.', 'Gauge'),
-(4, 'Eléctricos', 'Ecomovilidad de vanguardia silenciosa con motorización 100% eléctrica.', 'Zap');
+-- POBLAR MAESTRO DE CATEGORÍAS 
+INSERT IGNORE INTO categorias (id, nombre, descripcion, url_imagen) VALUES 
+(1, 'Sedán', 'Autos compactos y confortables ideales para viajes ejecutivos y trayectos urbanos.', 'https://cdn-icons-png.flaticon.com/512/55/55283.png'),
+(2, 'SUV', 'Vehículos utilitarios deportivos, espaciosos y potentes para terrenos exigentes.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnz6BL--0W-Y59oicSjzr59H7jBFZbFxbWQ7gIxGsoQA&s=10'),
+(3, 'Deportivos', 'Modelos exóticos de alta gama, ingeniería avanzada y máxima velocidad.', 'https://cdn-icons-png.flaticon.com/512/55/55168.png'),
+(4, 'Eléctricos', 'Ecomovilidad de vanguardia silenciosa con motorización 100% eléctrica.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYNJtKD2dZ0VNvj8GIhW0RgpUIfw6nLmhUUrqKgO_5Ww&s=10');
 
 
 -- POBLAR 20 VEHÍCULOS DISTRIBUIDOS EN LAS 4 CATEGORÍAS
@@ -38,31 +38,31 @@ INSERT IGNORE INTO vehiculos (id, nombre, descripcion, precio_por_dia, categoria
 
 -- ENLAZAR MÍNIMO UNA IMAGEN PUBLICITARIA DE ALTA RESOLUCIÓN POR CADA VEHÍCULO
 INSERT IGNORE INTO vehiculo_imagenes (vehiculo_id, url_imagen) VALUES
-(1, 'https://unsplash.com'),
-(2, 'https://unsplash.com'),
-(3, 'https://unsplash.com'),
-(4, 'https://unsplash.com'),
-(5, 'https://unsplash.com'),
-(6, 'https://unsplash.com'),
-(7, 'https://unsplash.com'),
-(8, 'https://unsplash.com'),
-(9, 'https://unsplash.com'),
-(10, 'https://unsplash.com'),
-(11, 'https://unsplash.com'),
-(12, 'https://unsplash.com'),
-(13, 'https://unsplash.com'),
-(14, 'https://unsplash.com'),
-(15, 'https://unsplash.com'),
-(16, 'https://unsplash.com'),
-(17, 'https://unsplash.com'),
-(18, 'https://unsplash.com'),
-(19, 'https://unsplash.com'),
-(20, 'https://unsplash.com');
+(1, 'https://acroadtrip.blob.core.windows.net/catalogo-imagenes/s/RT_V_55247b2a36b74b1c9f6761c7b4bdefe9.jpg'),
+(2, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRanMOSazguMqItUrwHD_uAjFugxTMTlzDqkgbrxQsrU3_x3VMfWecqn8e-&s=10'),
+(3, 'https://assets.volkswagen.com/is/image/volkswagenag/VW%20VENTO%20LATINNCAP%2025_1?Zml0PWNyb3AsMSZmbXQ9cG5nJndpZD04MDAmYWxpZ249MC4wMCwwLjAwJmJmYz1vZmYmYzRiMA=='),
+(4, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTq1X9sNY4KLUXiRqJIXlDr_KCglcuQK3DmpeHEYQmLATwwbiqkqZRzokA&s=10'),
+(5, 'https://www.mercedes-benz.com.ar/content/dam/hq/passengercars/cars/c-class/c-class-saloon-w206-pi/modeloverview/06-2022/images/mercedes-benz-c-class-w206-modeloverview-696x392-06-2022.png'),
+(6, 'https://media.toyota.com.ar/49dc02b3-68a5-489c-acec-a44839efcde8.jpeg'),
+(7, 'https://www.autodrive.com.ar/images/Compass_Limited_Carbon_Black2022.jpg'),
+(8, 'https://www.ford.com.ar/content/dam/Ford/website-assets/latam/ar/nameplate/territory/2025/models/titanium/billboard/far-nueva-territory-model-titanium-billboard.jpg'),
+(9, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTGWKk5rzOvYG4oe84RTmFc5tqZGt2LTnY2cvXiPzSuK1n8NQ_73LcwObAc&s=10'),
+(10, 'https://acnews.blob.core.windows.net/imgnews/medium/NAZ_e03c5e94ce8f420d910b85173a69bbf2.webp'),
+(11, 'https://acnews.blob.core.windows.net/imgnews/medium/NAZ_6f813f44cdde438e8386b9f742988b44.jpg'),
+(12, 'https://acnews.blob.core.windows.net/imgnews/large/NAZ_af1ff17ccc3b4231b8825e4b9ebe1659.jpg'),
+(13, 'https://resizer.iproimg.com/unsafe/768x/filters:format(webp):quality(75):max_bytes(102400)/https://assets.iprofesional.com/assets/jpg/2013/03/375884.jpg'),
+(14, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRu_k4XP-H691hptBxXFkkt6kQlvdaNzhxegeNEpphYh9gTigrwEYy2i3XN&s=10'),
+(15, 'https://acnews.blob.core.windows.net/imgnews/large/NAZ_df48b53d9c044d6e8d3fa85e40a31508.jpg'),
+(16, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRpxNyFYYFfC4yQzEnnJBFAVV6uI1wZ4EU-qnHEhuCPQjpESbHO-hbu85Op&s=10'),
+(17, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyLX2yMVC9rT2N2eLtri0Hf9-CM0iRKJN01Ozge-3PLVVIvYc7bavQqGft&s=10'),
+(18, 'https://acnews.blob.core.windows.net/imggallery/800x600/GAZ_e94a0dd9f5b54e4fa917ed216a1972cf.jpg'),
+(19, 'https://a.storyblok.com/f/322327/2586x1449/7569dfbed6/taycan-4s.jpg/m/865x486/smart/filters:format(webp)?dpl=dpl_9A8NYGWRmqpWWWcRFM6yoioLrazQ'),
+(20, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwBkLGSxb3or7_2q7Zva22lW-zj2vroukfCn__ZUMwAg&s=10');
 
 -- INSERTAR CARACTERÍSTICAS DE PRUEBA
 INSERT IGNORE INTO caracteristicas (id, nombre, url_imagen) VALUES 
-(1, 'Aire Acondicionado', 'https://flaticon.com'),
-(2, 'Conexión WiFi', 'https://flaticon.com'),
-(3, 'Navegador GPS', 'https://flaticon.com'),
-(4, 'Caja Automática', 'https://flaticon.com');
+(1, 'Aire Acondicionado', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQbNPjsJLK_jx0BoE2ZOBDiR-RjAzKIGjDP_ne7r2O3iQ&s=10'),
+(2, 'Conexión WiFi', 'https://static.vecteezy.com/system/resources/thumbnails/007/882/232/small/wifi-icon-style-free-vector.jpg'),
+(3, 'Navegador GPS', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBkFNWd2xjX526STpfALT6-FYNbK54UJQZtW9nQk97IA&s=10'),
+(4, 'Caja Automática', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfnOIW-USIIPLKxoTrvVWDTBuFnmd385fJJs6VMn5oUw&s=10');
 

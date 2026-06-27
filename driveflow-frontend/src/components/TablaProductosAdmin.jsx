@@ -17,11 +17,11 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
   const [vehiculoParaConfirmarEditar, setVehiculoParaConfirmarEditar] = useState(null);
   const [vehiculoEnEdicion, setVehiculoEnEdicion] = useState(null);
 
-  // Sincronización asíncrona adaptada al backend con paginación DTO de Spring Boot
+  // Sincronización asíncrona adaptada al backend con paginación DTO 
   const cargarInventarioFlota = () => {
-    fetch('http://localhost:8080/api/vehiculos/paginados?page=0&size=50')
+    fetch('http://localhost:8080/api/vehiculos/paginados?page=0&size=50&esAdmin=true')
       .then((res) => {
-        if (!res.ok) throw new Error('Error al conectar con la base de datos de DriveFlow');
+        if (!res.ok) throw new Error('Error al conectar con la base de datos');
         return res.json();
       })
       .then((data) => {
