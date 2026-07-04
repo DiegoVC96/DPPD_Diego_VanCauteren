@@ -1,12 +1,17 @@
 package com.driveflow.controllers;
 
+import com.driveflow.dtos.LoginRequestDTO;
 import com.driveflow.dtos.UsuarioRequestDTO;
-import com.driveflow.models.Rol;
+import com.driveflow.dtos.UsuarioResponseDTO;
 import com.driveflow.models.Usuario;
 import com.driveflow.repositories.UsuarioRepository;
 import com.driveflow.services.EmailService;
 import com.driveflow.services.UsuarioService;
 import jakarta.validation.Valid;
+
+import java.util.stream.Collectors;
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,26 +32,38 @@ public class UsuarioController {
     }
 
     @PostMapping("/registro")
-    public ResponseEntity<Usuario> registrar(@Valid @RequestBody UsuarioRequestDTO dto) {
-        Usuario nuevoUsuario = usuarioService.registrarUsuario(dto);
-        return new ResponseEntity<>(nuevoUsuario, HttpStatus.CREATED);
+    public ResponseEntity<UsuarioResponseDTO> registrar(@Valid @RequestBody UsuarioRequestDTO dto) {
+        Usuario usuario = usuarioService.registrarUsuario(dto);
+        UsuarioResponseDTO respuesta = new UsuarioResponseDTO(
+            usuario.getId(), usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getRol()
+        );
+        return new ResponseEntity<>(respuesta, HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Usuario> login(@Valid @RequestBody com.driveflow.dtos.LoginRequestDTO dto) {
-        Usuario usuarioAutenticado = usuarioService.autenticarUsuario(dto);
-        return ResponseEntity.ok(usuarioAutenticado);
+    public ResponseEntity<UsuarioResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
+        Usuario usuario = usuarioService.autenticarUsuario(dto);
+        UsuarioResponseDTO respuesta = new UsuarioResponseDTO(
+            usuario.getId(), usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getRol()
+        );
+        return ResponseEntity.ok(respuesta);
     }
 
     @GetMapping
-    public ResponseEntity<java.util.List<Usuario>> listarTodosLosUsuarios() {
-        return ResponseEntity.ok(usuarioService.obtenerTodos());
+    public ResponseEntity<List<UsuarioResponseDTO>> listarTodosLosUsuarios() {
+        List<UsuarioResponseDTO> lista = usuarioService.obtenerTodos().stream()
+                .map(u -> new UsuarioResponseDTO(u.getId(), u.getNombre(), u.getApellido(), u.getEmail(), u.getRol()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(lista);
     }
 
     @PatchMapping("/{id}/cambiar-rol")
-    public ResponseEntity<Usuario> cambiarRolUsuario(@PathVariable Long id, @RequestParam Rol nuevoRol) {
-        Usuario usuarioActualizado = usuarioService.modificarRol(id, nuevoRol);
-        return ResponseEntity.ok(usuarioActualizado);
+    public ResponseEntity<UsuarioResponseDTO> cambiarRolUsuario(@PathVariable Long id, @RequestParam com.driveflow.models.Rol nuevoRol) {
+        Usuario usuario = usuarioService.modificarRol(id, nuevoRol);
+        UsuarioResponseDTO respuesta = new UsuarioResponseDTO(
+            usuario.getId(), usuario.getNombre(), usuario.getApellido(), usuario.getEmail(), usuario.getRol()
+        );
+        return ResponseEntity.ok(respuesta);
     }
 
     @PostMapping("/reenviar-confirmacion")

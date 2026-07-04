@@ -54,13 +54,12 @@ export default function FormularioEditarProducto({ vehiculo, onCancel, onSaveSuc
     };
 
     try {
-      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
 
       const respuesta = await fetch(`http://localhost:8080/api/vehiculos/${vehiculo.id}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${credencialesBase64}`
+          'Authorization': `Basic ${usuario.authKey}`
         },
         body: JSON.stringify(payload)
       });

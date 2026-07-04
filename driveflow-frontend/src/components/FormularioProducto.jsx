@@ -1,24 +1,55 @@
-import { useState, useEffect, useContext} from 'react';
+import { useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContextStore';
+
+const esquemaProducto = z.object({
+  nombre: z.string()
+    .min(3, { message: "El nombre es obligatorio (mínimo 3 caracteres)" })
+    .max(100, { message: "El nombre no puede superar los 100 caracteres" }),
+  descripcion: z.string()
+    .min(10, { message: "La descripción comercial es obligatoria (mínimo 10 caracteres)" }),
+  precioPorDia: z.coerce.number()
+    .positive({ message: "La tarifa diaria debe ser un número mayor a 0" }),
+  categoriaId: z.string()
+    .min(1, { message: "Debe seleccionar una categoría para el vehículo" }),
+  nuevaUrlImagen: z.string().optional() 
+});
 
 export default function FormularioProducto({ onCerrar }) {
   const { usuario } = useContext(AuthContext);
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [precio, setPrecio] = useState('');
-  const [urlImagen, setUrlImagen] = useState('');
-  const [listaImagenes, setListaImagenes] = useState([]);
+  
+  const [categorias, setCategorias] = useState([]);
+  const [listaCaracteristicas, setListaCaracteristicas] = useState([]);
+  
+  const [imagenesSubidas, setImagenesSubidas] = useState([]);
+  const [caracteristicasSeleccionadas, setCaracteristicasSeleccionadas] = useState([]);
+  
   const [errorServidor, setErrorServidor] = useState('');
   const [exito, setExito] = useState(false);
-  const [categorias, setCategorias] = useState([]);
-  const [categoriaId, setCategoriaId] = useState('');
-  const [listaCaracteristicas, setListaCaracteristicas] = useState([]);
-  const [caracteristicasSeleccionadas, setCaracteristicasSeleccionadas] = useState([]);
+
+  const { register, handleSubmit, control, setValue, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(esquemaProducto),
+    defaultValues: { nombre: '', descripcion: '', precioPorDia: '', categoriaId: '', nuevaUrlImagen: '' }
+  });
+
+  const urlImagenDigitada = useWatch({ control, name: 'nuevaUrlImagen', defaultValue: '' });
 
   useEffect(() => {
+    fetch('http://localhost:8080/api/categorias').then(res => res.json()).then(data => setCategorias(data));
     fetch('http://localhost:8080/api/caracteristicas').then(res => res.json()).then(data => setListaCaracteristicas(data));
   }, []);
 
+  // Lógica manual para agregar URLs al carrusel multimedia
+  const agregarImagenAlLote = () => {
+    if (urlImagenDigitada && urlImagenDigitada.trim() !== '') {
+      setImagenesSubidas([...imagenesSubidas, urlImagenDigitada.trim()]);
+      setValue('nuevaUrlImagen', '');
+    }
+  };
+
+  // Lógica interactiva de selección múltiple de características inline (US #17)
   const manejarCheckboxChange = (id) => {
     if (caracteristicasSeleccionadas.includes(id)) {
       setCaracteristicasSeleccionadas(caracteristicasSeleccionadas.filter(item => item !== id));
@@ -27,186 +58,148 @@ export default function FormularioProducto({ onCerrar }) {
     }
   };
 
-  // Carga las categorías de la base de datos al montar el componente
-  useEffect(() => {
-    fetch('http://localhost:8080/api/categorias')
-      .then(res => res.json())
-      .then(data => setCategorias(data))
-      .catch(err => console.error("Error cargando categorías", err));
-  }, []);
-
-  // Añadir una URL de imagen a la lista temporal
-  const agregarImagenLista = () => {
-    if (urlImagen.trim() !== '') {
-      setListaImagenes([...listaImagenes, urlImagen.trim()]);
-      setUrlImagen('');
-    }
-  };
-
-  const manejarEnvio = async (e) => {
-    e.preventDefault();
+  const guardarVehiculo = async (data) => {
     setErrorServidor('');
     setExito(false);
 
-    if (listaImagenes.length === 0) {
-      setErrorServidor('Debe añadir al menos una imagen antes de guardar.');
+    if (imagenesSubidas.length === 0) {
+      setErrorServidor('Criterio de Aceptación US #3: Debe incorporar al menos una URL de imagen representativa.');
       return;
     }
 
     const payload = {
-      nombre,
-      descripcion,
-      precioPorDia: parseFloat(precio),
-      imagenes: listaImagenes,
-      categoriaId: categoriaId ? parseInt(categoriaId, 10) : null,
+      nombre: data.nombre,
+      descripcion: data.descripcion,
+      precioPorDia: data.precioPorDia,
+      imagenes: imagenesSubidas,
+      categoriaId: parseInt(data.categoriaId, 10),
       caracteristicasIds: caracteristicasSeleccionadas
     };
 
     try {
-      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
-
       const respuesta = await fetch('http://localhost:8080/api/vehiculos', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Basic ${credencialesBase64}`
+          'Authorization': `Basic ${usuario.authKey}`
         },
         body: JSON.stringify(payload)
       });
 
       if (!respuesta.ok) {
-        if (respuesta.status === 401) {
-          throw new Error('Su sesión ha expirado o sus privilegios de Administrador no son válidos.');
-        }
         const datos = await respuesta.json();
-        throw new Error(datos.mensaje || 'Error al guardar el producto');
+        throw new Error(datos.mensaje || 'Error al procesar el alta del automóvil.');
       }
 
       setExito(true);
-      setNombre('');
-      setDescripcion('');
-      setPrecio('');
-      setListaImagenes([]);
-      setCategoriaId('');
+      setImagenesSubidas([]);
       setCaracteristicasSeleccionadas([]);
+      reset();
     } catch (err) {
       setErrorServidor(err.message);
     }
   };
-
   return (
-    <div className="bg-white border border-brand-border p-6 rounded-2xl shadow-md max-w-2xl mx-auto">
+    <div className="bg-white border border-brand-border p-6 rounded-2xl shadow-md max-w-2xl mx-auto text-brand-dark animate-fade-in">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold text-brand-dark">Registrar Nuevo Vehículo</h2>
-        <button onClick={onCerrar} className="text-slate-400 hover:text-slate-600 text-sm font-semibold cursor-pointer">
-          Volver al catálogo
-        </button>
+        <h2 className="text-xl font-black text-brand-dark">Registrar Nuevo Vehículo en Flota</h2>
+        <button onClick={onCerrar} className="text-xs font-bold text-slate-400 hover:text-slate-600 cursor-pointer">Cerrar</button>
       </div>
 
-      {errorServidor && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-lg">
-          ⚠️ {errorServidor}
-        </div>
-      )}
+      {errorServidor && <div className="mb-4 p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl">⚠️ {errorServidor}</div>}
+      {exito && <div className="mb-4 p-3 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-xl text-center">🎉 ¡Vehículo guardado de forma atómica en XAMPP con éxito!</div>}
 
-      {exito && (
-        <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium rounded-lg">
-          🎉 ¡Vehículo guardado exitosamente en la base de datos!
-        </div>
-      )}
-
-      <form onSubmit={manejarEnvio} className="space-y-4">
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Nombre del auto</label>
-          <input 
-            type="text" required value={nombre} onChange={(e) => setNombre(e.target.value)}
-            className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
-            placeholder="Ej: Toyota Corolla Hybrid 2026"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Descripción</label>
-          <textarea 
-            required rows="3" value={descripcion} onChange={(e) => setDescripcion(e.target.value)}
-            className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
-            placeholder="Escribe los detalles del servicio, equipamiento, transmisión..."
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Precio por día ($)</label>
-          <input 
-            type="number" required min="1" value={precio} onChange={(e) => setPrecio(e.target.value)}
-            className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
-            placeholder="Ej: 45000"
-          />
-        </div>
-
-        <div className="bg-slate-50 border border-brand-border p-4 rounded-xl">
-          <label className="block text-[10px] font-bold uppercase text-slate-400 mb-2 tracking-wider">Características Disponibles</label>
-            <div className="grid grid-cols-2 gap-3">
-              {listaCaracteristicas.map(c => (
-                <label key={c.id} className="flex items-center space-x-2 text-xs font-semibold cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={caracteristicasSeleccionadas.includes(c.id)}
-                    onChange={() => manejarCheckboxChange(c.id)}
-                    className="rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
-                  />
-                  <span>{c.nombre}</span>
-                </label>
-              ))}
-            </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Categoría del Vehículo</label>
-          <select 
-            value={categoriaId} 
-            onChange={(e) => setCategoriaId(e.target.value)}
-            className="w-full bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
-            >
-            <option value="">Seleccione una categoría...</option>
-            {categorias.map(cat => (
-              <option key={cat.id} value={cat.id}>{cat.nombre}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Añadir Imágenes (Una o más)</label>
-          <div className="flex gap-2">
+      <form onSubmit={handleSubmit(guardarVehiculo)} className="space-y-5" noValidate>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-wider">Nombre Comercial</label>
             <input 
-              type="url" value={urlImagen} onChange={(e) => setUrlImagen(e.target.value)}
-              className="grow bg-slate-50 border border-brand-border rounded-lg p-2.5 text-sm focus:border-brand-primary focus:outline-none"
-              placeholder="https://ejemplo.com"
+              type="text" {...register('nombre')}
+              className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs focus:outline-none ${errors.nombre ? 'border-red-500' : 'border-brand-border focus:border-brand-primary'}`}
+              placeholder="Ej: Tesla Model S"
             />
-            <button 
-              type="button" onClick={agregarImagenLista}
-              className="bg-brand-dark text-white px-4 text-sm font-medium rounded-lg hover:bg-slate-800 cursor-pointer"
-            >
-              Añadir
-            </button>
+            {errors.nombre && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.nombre.message}</p>}
           </div>
-          
-          {listaImagenes.length > 0 && (
-            <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-brand-border space-y-1">
-              <p className="text-xs font-bold text-slate-400 uppercase">Imágenes cargadas ({listaImagenes.length}):</p>
-              {listaImagenes.map((url, idx) => (
-                <div key={idx} className="text-xs text-blue-600 truncate bg-white p-1.5 rounded border border-slate-100">
-                  {url}
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-wider">Categoría Relacionada</label>
+            <select 
+              {...register('categoriaId')}
+              className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs focus:outline-none ${errors.categoriaId ? 'border-red-500' : 'border-brand-border focus:border-brand-primary'}`}
+            >
+              <option value="">Seleccione un segmento...</option>
+              {categorias.map(cat => <option key={cat.id} value={cat.id}>{cat.nombre}</option>)}
+            </select>
+            {errors.categoriaId && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.categoriaId.message}</p>}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
+          <div className="md:col-span-2">
+            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-wider">Descripción del Servicio</label>
+            <textarea 
+              rows="3" {...register('descripcion')}
+              className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs focus:outline-none ${errors.descripcion ? 'border-red-500' : 'border-brand-border focus:border-brand-primary'}`}
+              placeholder="Escriba los detalles comerciales para el cliente..."
+            />
+            {errors.descripcion && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.descripcion.message}</p>}
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-wider">Tarifa Diaria ($)</label>
+            <input 
+              type="number" {...register('precioPorDia')}
+              className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs focus:outline-none font-mono font-bold ${errors.precioPorDia ? 'border-red-500' : 'border-brand-border focus:border-brand-primary'}`}
+              placeholder="0.00"
+            />
+            {errors.precioPorDia && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.precioPorDia.message}</p>}
+          </div>
+        </div>
+
+        {/* CONTENEDOR MULTIMEDIA: Carga dinámica de fotos */}
+        <div className="bg-slate-50 border border-brand-border p-4 rounded-xl">
+          <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-wider">Galería de Imágenes (URLs Libres de Internet)</label>
+          <div className="flex space-x-2">
+            <input 
+              type="text" {...register('nuevaUrlImagen')}
+              className="grow bg-white border border-brand-border rounded-xl p-2.5 text-xs focus:outline-none focus:border-brand-primary font-mono text-blue-600"
+              placeholder="https://unsplash.com"
+            />
+            <button type="button" onClick={agregarImagenAlLote} className="bg-brand-primary text-white font-bold text-xs px-4 rounded-xl cursor-pointer hover:bg-blue-700 transition-colors">Añadir</button>
+          </div>
+          {imagenesSubidas.length > 0 && (
+            <div className="grid grid-cols-4 gap-2 mt-3">
+              {imagenesSubidas.map((url, idx) => (
+                <div key={idx} className="w-full h-16 bg-white border rounded-lg p-1 relative group overflow-hidden">
+                  <img src={url} alt="" className="w-full h-full object-contain" />
+                  <button type="button" onClick={() => setImagenesSubidas(imagenesSubidas.filter((_, i) => i !== idx))} className="absolute inset-0 bg-red-600/90 text-white font-bold text-[9px] uppercase tracking-wider flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">Quitar</button>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        <button 
-          type="submit"
-          className="w-full bg-brand-primary hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors shadow-sm cursor-pointer mt-2"
-        >
-          Guardar Producto
+        {/* SELECCIÓN MÚLTIPLE DE CARACTERÍSTICAS (US #17) */}
+        <div className="bg-slate-50 border border-brand-border p-4 rounded-xl">
+          <label className="block text-[10px] font-bold uppercase text-brand-primary mb-2 tracking-widest">Asociar Características Disponibles</label>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {listaCaracteristicas.map(c => {
+              const estaMarcado = caracteristicasSeleccionadas.includes(c.id);
+              return (
+                <label key={c.id} className={`flex items-center space-x-2 text-xs font-bold p-2 rounded-lg border transition-all select-none cursor-pointer ${estaMarcado ? 'bg-blue-50/50 border-blue-200 text-brand-primary' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'}`}>
+                  <input 
+                    type="checkbox" checked={estaMarcado} onChange={() => manejarCheckboxChange(c.id)}
+                    className="rounded border-slate-300 text-brand-primary focus:ring-brand-primary w-3.5 h-3.5 cursor-pointer"
+                  />
+                  <span className="truncate">{c.nombre}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <button type="submit" className="w-full bg-brand-primary text-white font-bold py-3 rounded-xl text-xs uppercase tracking-wider cursor-pointer shadow-sm hover:bg-blue-700 transition-colors">
+          Registrar Vehículo en Catálogo
         </button>
       </form>
     </div>

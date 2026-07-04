@@ -16,13 +16,12 @@ export default function FormularioEditarCategoria({ categoria, onCancel, onSaveS
   const payload = { nombre, descripcion, urlImagen: urlImagen.trim(), icono };
 
   try {
-    const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
 
     const res = await fetch(`http://localhost:8080/api/categorias/${categoria.id}`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Basic ${credencialesBase64}` 
+        'Authorization': `Basic ${usuario.authKey}` 
       },
       body: JSON.stringify(payload)
     });

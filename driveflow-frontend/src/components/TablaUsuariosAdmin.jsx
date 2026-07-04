@@ -32,12 +32,11 @@ export default function TablaUsuariosAdmin() {
   const togglePermisoAdmin = async (id, rolActual) => {
     const nuevoRol = rolActual === 'ADMINISTRADOR' ? 'CLIENTE' : 'ADMINISTRADOR';
     try {
-      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
 
       const res = await fetch(`http://localhost:8080/api/usuarios/${id}/cambiar-rol?nuevoRol=${nuevoRol}`, {
         method: 'PATCH',
         headers: {
-          'Authorization': `Basic ${credencialesBase64}`
+          'Authorization': `Basic ${usuario.authKey}`
         }
       });
       
