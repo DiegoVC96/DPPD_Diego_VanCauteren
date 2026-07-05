@@ -5,7 +5,6 @@ import com.driveflow.models.Vehiculo;
 import com.driveflow.services.VehiculoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,13 +48,14 @@ public class VehiculoController {
 
     @GetMapping("/paginados")
     public ResponseEntity<Page<Vehiculo>> listarVehiculosPaginados(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) List<Long> categorias,
-            @RequestParam(defaultValue = "false") boolean esAdmin 
-        ) {
-        Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
-        Page<Vehiculo> resultado = vehiculoService.obtenerVehiculosPaginadosFiltrados(categorias, pageable, esAdmin);
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(required = false) String texto, // <-- CAPTURA DE PALABRA CLAVE
+        @RequestParam(required = false) List<Long> categorias,
+        @RequestParam(defaultValue = "false") boolean esAdmin
+    ) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        Page<Vehiculo> resultado = vehiculoService.obtenerVehiculosPaginadosFiltrados(texto, categorias, pageable, esAdmin);
         return ResponseEntity.ok(resultado);
     }
 

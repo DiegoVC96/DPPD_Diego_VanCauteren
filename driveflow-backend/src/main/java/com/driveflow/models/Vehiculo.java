@@ -47,4 +47,8 @@ public class Vehiculo {
     )
     private List<Caracteristica> caracteristicas = new java.util.ArrayList<>();
 
+    @OneToMany(mappedBy = "vehiculo", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @com.fasterxml.jackson.annotation.JsonManagedReference
+    private java.util.List<Politica> politicas = new java.util.ArrayList<>();
+
 }

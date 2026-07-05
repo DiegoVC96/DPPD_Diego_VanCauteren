@@ -66,3 +66,18 @@ INSERT IGNORE INTO caracteristicas (id, nombre, url_imagen) VALUES
 (3, 'Navegador GPS', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSBkFNWd2xjX526STpfALT6-FYNbK54UJQZtW9nQk97IA&s=10'),
 (4, 'Caja Automática', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfnOIW-USIIPLKxoTrvVWDTBuFnmd385fJJs6VMn5oUw&s=10');
 
+-- Inserción de reservas de prueba (Bloquea rangos para el coche 1)
+INSERT IGNORE INTO reservas (id, fecha_inicio, fecha_fin, vehiculo_id, usuario_id) VALUES 
+(1, '2026-07-10', '2026-07-15', 1, 2),
+(2, '2026-07-22', '2026-07-25', 1, 2);
+
+-- Inserción de Políticas del Producto obligatorias de la US #26
+INSERT IGNORE INTO politicas (id, titulo, descripcion, vehiculo_id) VALUES 
+(1, 'Normas de Entrega', 'El conductor debe presentar licencia de conducir vigente y DNI físico al momento del retiro. Se otorga una tolerancia máxima de 30 minutos de retraso.', 1),
+(2, 'Cuidados de la Flota', 'Prohibido fumar dentro del habitáculo y trasladar mascotas fuera de sus jaulas de viaje. El coche se entrega limpio y debe devolverse en condiciones óptimas.', 1),
+(3, 'Políticas de Cancelación', 'Las cancelaciones efectuadas con más de 48 horas de anticipación recibirán un reembolso del 100%. Pasado ese límite, se retendrá el valor equivalente a una jornada diaria.', 1);
+
+-- Inserción de reseñas iniciales de la US #28
+INSERT IGNORE INTO puntuaciones (id, estrellas, comentario, fecha_publicacion, vehiculo_id, usuario_id) VALUES 
+(1, 5, 'Excelente confort, el vehículo se entregó impecable y con el tanque lleno. Altamente recomendado.', '2023-10-01', 1, 2),
+(2, 4, 'Muy buen rendimiento en autopista y gran espacio interior. La atención de DriveFlow fue fabulosa.', '2023-10-02', 1, 2);

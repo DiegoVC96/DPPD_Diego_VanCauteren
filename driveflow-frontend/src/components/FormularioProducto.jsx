@@ -41,7 +41,6 @@ export default function FormularioProducto({ onCerrar }) {
     fetch('http://localhost:8080/api/caracteristicas').then(res => res.json()).then(data => setListaCaracteristicas(data));
   }, []);
 
-  // Lógica manual para agregar URLs al carrusel multimedia
   const agregarImagenAlLote = () => {
     if (urlImagenDigitada && urlImagenDigitada.trim() !== '') {
       setImagenesSubidas([...imagenesSubidas, urlImagenDigitada.trim()]);
@@ -49,7 +48,6 @@ export default function FormularioProducto({ onCerrar }) {
     }
   };
 
-  // Lógica interactiva de selección múltiple de características inline (US #17)
   const manejarCheckboxChange = (id) => {
     if (caracteristicasSeleccionadas.includes(id)) {
       setCaracteristicasSeleccionadas(caracteristicasSeleccionadas.filter(item => item !== id));

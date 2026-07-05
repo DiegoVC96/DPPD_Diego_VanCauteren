@@ -71,7 +71,6 @@ export default function FormularioCategoria({ onCerrar }) {
       {errorServidor && <div className="mb-4 p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl">⚠️ {errorServidor}</div>}
       {exito && <div className="mb-4 p-3 bg-emerald-50 text-emerald-700 text-xs font-semibold rounded-xl text-center">🎉 ¡Categoría registrada exitosamente en XAMPP!</div>}
 
-      {/* REQUERIMIENTO CUMPLIDO: Formulario libre de atributos de validación HTML nativos mediante noValidate */}
       <form onSubmit={handleSubmit(guardarEnBaseDeDatos)} className="space-y-4" noValidate>
         <div>
           <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Título de la Categoría</label>
@@ -81,7 +80,6 @@ export default function FormularioCategoria({ onCerrar }) {
             className={`w-full bg-slate-50 border rounded-xl p-2.5 text-xs focus:outline-none ${errors.nombre ? 'border-red-500 focus:border-red-500' : 'border-brand-border focus:border-brand-primary'}`}
             placeholder="Ej: Minivans o Convertibles"
           />
-          {/* REQUERIMIENTO EXIGIDO: Mensaje de error específico inline debajo del campo */}
           {errors.nombre && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.nombre.message}</p>}
         </div>
 
@@ -106,8 +104,7 @@ export default function FormularioCategoria({ onCerrar }) {
           />
           {errors.urlImagen && <p className="text-[10px] text-red-500 mt-1 font-bold font-mono">{errors.urlImagen.message}</p>}
         </div>
-
-        {/* Previsualización en caliente controlada: evita descargar la página entera por strings vacijos */}
+        
         {urlImagenActual && urlImagenActual.trim() !== '' && !errors.urlImagen && (
           <div className="w-full h-36 bg-slate-50 border border-brand-border rounded-xl overflow-hidden flex items-center justify-center p-2">
             <img 

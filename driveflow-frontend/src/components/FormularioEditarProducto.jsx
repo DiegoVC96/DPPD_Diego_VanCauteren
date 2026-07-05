@@ -10,22 +10,18 @@ export default function FormularioEditarProducto({ vehiculo, onCancel, onSaveSuc
   const [categorias, setCategorias] = useState([]);
   const [todasLasCaracteristicas, setTodasLasCaracteristicas] = useState([]);
   
-  // Inicializa el estado con las IDs de las características que el vehículo YA tiene asignadas
   const [caracteristicasSeleccionadas, setCaracteristicasSeleccionadas] = useState(
     vehiculo.caracteristicas ? vehiculo.caracteristicas.map(c => c.id) : []
   );
   
   const [errorServidor, setErrorServidor] = useState('');
 
-  // Carga catálogos maestros desde el Backend al montar el componente
   useEffect(() => {
-    // Cargar Categorías para el dropdown
     fetch('http://localhost:8080/api/categorias')
       .then(res => res.json())
       .then(data => setCategorias(data))
       .catch(err => console.error("Error cargando categorías", err));
 
-    // Cargar Características del Catálogo para los Checkboxes
     fetch('http://localhost:8080/api/caracteristicas')
       .then(res => res.json())
       .then(data => setTodasLasCaracteristicas(data))
@@ -128,7 +124,6 @@ export default function FormularioEditarProducto({ vehiculo, onCancel, onSaveSuc
           ) : (
             <div className="grid grid-cols-2 gap-3">
               {todasLasCaracteristicas.map(c => {
-                // Evalúa dinámicamente si el ID está en el lote para pintar la caja marcada
                 const estaMarcado = caracteristicasSeleccionadas.includes(c.id);
                 return (
                   <label 

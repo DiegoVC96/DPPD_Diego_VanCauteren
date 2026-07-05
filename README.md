@@ -61,6 +61,48 @@ Basado en las nuevas lógicas relacionales, criptográficas y de seguridad imple
 | **CP-23** | US #21: Crear Familia | Guardar una nueva categoría rellenando el formulario de la consola administrativa. | El objeto viaja por el método `POST` inyectando el título, la descripción, el icono y la `urlImagen` representativa de forma atómica en XAMPP. | **PASSED** |
 | **CP-24** | USB #2: CRUD Familias | Pulsar la papelera de una categoría en la lista y cancelar la confirmación del modal. | El puntero de control del modal se vacía restituyendo el foco de la tabla original de inmediato, impidiendo alteraciones de red y resguardando la integridad referencial. | **PASSED** |
 
+## 📋 Historias de Usuario Resueltas (Sprint 3)
+
+### 🔍 US #22: Realizar búsqueda (Motor de Filtrado)
+- **Maquetación:** Bloque buscador con título corporativo y párrafo informativo visible.
+- **Calendario Doble:** Integración responsiva de un calendario de dos meses continuos (`months={2}`) en idioma español para definir rangos de entrega y devolución.
+- **Feedback Interactivo:** Sistema de autocompletado con sugerencias flotantes en tiempo real sobre los nombres de los automóviles comerciales, controlado con un Debounce de 300ms para cuidar el rendimiento de la red.
+- **Fidelidad Visual:** El buscador mantiene inalteradas las cuadrículas de categorías y recomendaciones inferiores, actualizando las tarjetas en caliente.
+
+### 📅 US #23: Visualizar disponibilidad (Ficha de Detalle)
+- **Visualización Pasiva:** Inclusión de un calendario doble estático de consulta prominente dentro de la tarjeta de cotización lateral de `DetalleProducto.jsx`.
+- **Indicador de Ocupación:** Conexión con el endpoint asíncrono `/api/reservas/ocupadas/{id}`. Las fechas reservadas se inyectan en `disabledDates`, pintándose en gris pizarra blando y bloqueando cualquier interacción física.
+- **Manejo de Errores Robustos:** Intercepción atómica ante fallos de conexión en red, ocultando la rejilla rota y desplegando un banner de contingencia con el botón interactivo *"Intentar acceder nuevamente"*.
+
+### 📱 US #27: Redes - Compartir productos
+- **Acción Emergente:** Botón vectorial flotante (`Share2`) en la cabecera que despliega un modal interactivo difuminando el fondo.
+- **Contenido Multidominio:** Sincronización en caliente de la imagen representativa del coche, su título, descripción breve y enlace directo inmutable.
+- **Personalización e Integración:** Cuadro de texto para redactar un mensaje propio y botones con el kit de marca oficial para Facebook, Twitter (X) y WhatsApp. Utiliza la API universal acortada **`wa.me/`** para disparar la apertura nativa en smartphones y tabletas sin redundancia de variables.
+
+### ⭐ US #28: Puntuar producto
+- **Sistema de Estrellas:** Formulario interactivo de escala de 1 a 5 estrellas (`Star`) en un bloque prominente de la ficha técnica reservado para usuarios autenticados.
+- **Historial Detallado:** El módulo despliega el nombre del autor, estrellas otorgadas, comentarios detallados y la fecha de publicación formateada (`es-AR`).
+- **Puntuación Media Dinámica:** Recálculo matemático inmediato en caliente en el Backend de XAMPP tras cada inserción, actualizando el promedio y el volumen total de reseñas tanto en el Header de la ficha como en el catálogo general del Home.
+
+### 🗑️ US #29: Eliminar categoría
+- **Acceso Intuitivo:** Botón de papelera rojo estilizado dentro del maestro de familias en la consola.
+- **Confirmación Preventiva:** Modal de alerta de alta visibilidad que intercepta la acción, detallando el ID y el nombre exacto de la categoría.
+- **Seguridad Relacional:** El Backend (`CategoriaService.java`) valida que la categoría no contenga vehículos asociados en stock; si existen coches vinculados, frena la operación arrojando un error `HTTP 409 Conflict` procesado de forma clara para el administrador. Expone botones simétricos de *"Confirmar Baja"* o *"Cancelar Acción"*.
+
+---
+
+## 🔒 Auditoría de Ciberseguridad y Optimización Aplicada
+
+### 1. Eliminación Completa de "Cascading Renders" en Efectos
+En cumplimiento con las directrices estrictas de rendimiento de **React**, se erradicaron las mutaciones de estados síncronas (`setState()`) del cuerpo directo de los `useEffect`. 
+- En la ficha técnica, los estados de limpieza de errores se configuraron de forma directa en el nacimiento de las variables de los hooks, logrando que la consola de desarrollo de Vite compile al 100% limpia de advertencias.
+
+### 2. Aislamiento de Capas Arquitectónicas (Controladores Puros)
+Se saneó el 100% del Backend removiendo consultas e invocaciones residuales directas a interfaces JPA desde los controladores (`@RestController`). Toda la lógica del negocio, filtros y el control relacional se encapsuló en clases `@Service` inmutables, protegiendo el sistema contra inyecciones y garantizando una separación limpia de capas.
+
+### 3. Cifrado Simétrico del Lado del Cliente (LocalStorage Protegido)
+Se solucionó la vulnerabilidad crítica del almacenamiento de contraseñas. Al iniciar sesión, la contraseña en texto plano jamás se guarda en el disco; el objeto de sesión que viaja desde el `UsuarioResponseDTO` (el cual omite el password del JSON de red) se codifica mediante un algoritmo de cifrado reversible inyectado con **Web Crypto API** antes de guardarse en `localStorage`, quedando inaccesible ante ataques de extensiones maliciosas. Las firmas administrativas viajan de forma segura mediante `Basic Auth`.
+
 ---
 
 ## 🚀 4. Guía de Instalación y Despliegue (Para Evaluadores)

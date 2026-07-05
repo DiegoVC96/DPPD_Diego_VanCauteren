@@ -7,6 +7,7 @@ import com.driveflow.exceptions.NombreDuplicadoException;
 import com.driveflow.models.Rol;
 import com.driveflow.models.Usuario;
 import com.driveflow.repositories.UsuarioRepository;
+import com.driveflow.repositories.VehiculoRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,10 +21,13 @@ public class UsuarioService {
 
     private final EmailService emailService;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, EmailService emailService) {
+    private final VehiculoRepository vehiculoRepository;
+
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder, EmailService emailService, VehiculoRepository vehiculoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.vehiculoRepository = vehiculoRepository;
     }
 
     @Transactional
@@ -40,7 +44,6 @@ public class UsuarioService {
 
         Usuario guardado = usuarioRepository.save(usuario);
 
-        // REQUERIMIENTO: El correo electrónico de confirmación se envía inmediatamente después del éxito
         emailService.enviarCorreoConfirmacion(guardado.getNombre(), guardado.getApellido(), guardado.getEmail());
 
         return guardado;
@@ -74,6 +77,22 @@ public class UsuarioService {
     
         usuarioDestino.setRol(nuevoRol);
         return usuarioRepository.save(usuarioDestino);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void guardarFavorito(Long usuarioId, Long vehiculoId) {
+        if (!usuarioRepository.existsById(usuarioId) || !vehiculoRepository.existsById(vehiculoId)) {
+            throw new com.driveflow.exceptions.RecursoNoEncontradoException("Identificadores no válidos");
+        }
+        usuarioRepository.insertarFavoritoNativo(usuarioId, vehiculoId);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void eliminarFavorito(Long usuarioId, Long vehiculoId) {
+        if (!usuarioRepository.existsById(usuarioId) || !vehiculoRepository.existsById(vehiculoId)) {
+            throw new com.driveflow.exceptions.RecursoNoEncontradoException("Identificadores no válidos");
+        }
+        usuarioRepository.eliminarFavoritoNativo(usuarioId, vehiculoId);
     }
 
 }

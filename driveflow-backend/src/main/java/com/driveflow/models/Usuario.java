@@ -32,4 +32,12 @@ public class Usuario {
     @Column(nullable = false, length = 20)
     private Rol rol = Rol.CLIENTE;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "usuarios_favoritos",
+        joinColumns = @JoinColumn(name = "usuario_id"),
+        inverseJoinColumns = @JoinColumn(name = "vehiculo_id")
+    )
+    private java.util.Set<Vehiculo> favoritos = new java.util.HashSet<>();
+
 }

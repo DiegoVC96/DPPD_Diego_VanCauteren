@@ -24,9 +24,7 @@ public class CorsConfig {
         config.setAllowCredentials(true);
         config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"));
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-        config.setMaxAge(3600L); // Cachea la negociación de seguridad por 1 hora
-
-        // Aplica esta directiva de red de forma global a todas las rutas de la API
+        config.setMaxAge(3600L); 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
     }

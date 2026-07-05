@@ -9,8 +9,6 @@ import com.driveflow.models.Vehiculo;
 import com.driveflow.repositories.CaracteristicaRepository;
 import com.driveflow.repositories.CategoriaRepository;
 import com.driveflow.repositories.VehiculoRepository;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +31,9 @@ public class VehiculoService {
 
     @Transactional
     public Vehiculo actualizar(Long id, VehiculoRequestDTO dto) {
-        // Verificar si el auto existe
         Vehiculo vehiculoExistente = vehiculoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("No se puede editar: El vehículo con ID " + id + " no existe."));
 
-        // Si cambia el nombre, validar que el nuevo nombre no esté duplicado
         if (!vehiculoExistente.getNombre().equalsIgnoreCase(dto.nombre()) &&
             vehiculoRepository.existsByNombreIgnoreCase(dto.nombre())) {
             throw new NombreDuplicadoException("El nombre '" + dto.nombre() + "' ya está siendo utilizado por otro vehículo.");
@@ -54,27 +50,33 @@ public class VehiculoService {
             vehiculoExistente.setCaracteristicas(lista);
         }
 
-        // Modificar la entidad JPA
         vehiculoExistente.setNombre(dto.nombre());
         vehiculoExistente.setDescripcion(dto.descripcion());
         vehiculoExistente.setPrecioPorDia(dto.precioPorDia());
         vehiculoExistente.setImagenes(dto.imagenes());
 
-        // Guardar cambios
         return vehiculoRepository.save(vehiculoExistente);
     }
 
     @Transactional
     public void eliminarPorId(Long id) {
-        // Validación de existencia antes de borrar
         if (!vehiculoRepository.existsById(id)) {
             throw new RecursoNoEncontradoException("No se puede eliminar: El vehículo con ID " + id + " no existe.");
         }
         vehiculoRepository.deleteById(id);
     }
 
-    @Transactional(readOnly = true)
-    public Page<Vehiculo> obtenerVehiculosPaginadosFiltrados(List<Long> categoriaIds, Pageable pageable, boolean esAdmin) {
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Vehiculo> obtenerVehiculosPaginadosFiltrados(
+        String textoBusqueda, 
+        java.util.List<Long> categoriaIds, 
+        org.springframework.data.domain.Pageable pageable, 
+        boolean esAdmin
+    ) {
+        if (textoBusqueda != null && !textoBusqueda.trim().isEmpty()) {
+            return vehiculoRepository.findByNombreContainingIgnoreCase(textoBusqueda.trim(), pageable);
+        }
+    
         if (categoriaIds != null && !categoriaIds.isEmpty()) {
             return vehiculoRepository.findByCategoriaIdIn(categoriaIds, pageable);
         }
@@ -83,7 +85,7 @@ public class VehiculoService {
             return vehiculoRepository.findAll(pageable);
         }
     
-        return vehiculoRepository.findAllAleatoriosPaginados(pageable);
+        return vehiculoRepository.findAll(pageable); 
     }
 
     @Transactional(readOnly = true)

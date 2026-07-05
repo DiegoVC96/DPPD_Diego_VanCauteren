@@ -1,11 +1,9 @@
 import { useState, useContext, useRef, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContextStore';
-import { LogOut, User, Sliders } from 'lucide-react';
+import { LogOut, User, Sliders, Heart } from 'lucide-react';
 
-export default function Header({ onAbrirRegistro, onAbrirLogin }) {
+export default function Header({ onAbrirRegistro, onAbrirLogin, onCambiarVista }) {
   const { usuario, cerrarSesionGlobal } = useContext(AuthContext);
-  
-  // Estado para controlar el menú flotante debajo del avatar (US #15)
   const [menuAvatarAbierto, setMenuAvatarAbierto] = useState(false);
   const menuRef = useRef(null);
 
@@ -16,7 +14,6 @@ export default function Header({ onAbrirRegistro, onAbrirLogin }) {
     return `${n}${a}`;
   };
 
-  // Cierra el menú flotante si el usuario hace clic fuera de él 
   useEffect(() => {
     function clickFuera(evento) {
       if (menuRef.current && !menuRef.current.contains(evento.target)) {
@@ -44,9 +41,6 @@ export default function Header({ onAbrirRegistro, onAbrirLogin }) {
         {/* BLOQUE DERECHO: Acciones o Identificación */}
         <div className="flex items-center space-x-4">
           {usuario ? (
-            /* ==========================================
-               CONTENEDOR DEL AVATAR DEL USUARIO AUTENTICADO 
-               ========================================== */
             <div className="relative flex items-center space-x-3" ref={menuRef}>
               
               {/* Saludo Informativo (Opcional en escritorio) */}
@@ -76,6 +70,18 @@ export default function Header({ onAbrirRegistro, onAbrirLogin }) {
                       {usuario.rol}
                     </span>
                   </div>
+
+                  {/* Opción exclusiva para acceder a la lista de Favoritos (US #25) */}
+                  <button 
+                    onClick={() => { 
+                      onCambiarVista('mis_favoritos'); 
+                      setMenuAvatarAbierto(false); 
+                    }}
+                    className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center space-x-2 cursor-pointer transition-colors"
+                    >
+                    <Heart size={14} className="text-red-400 fill-red-400/20" />
+                    <span>Mis Favoritos</span>
+                  </button>
 
                   {/* ACCESO A LA CONSOLA (Solo visible para Administradores) */}
                   {usuario.rol === 'ADMINISTRADOR' && (

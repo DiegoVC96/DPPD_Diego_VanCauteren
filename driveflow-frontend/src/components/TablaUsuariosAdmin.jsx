@@ -28,7 +28,6 @@ export default function TablaUsuariosAdmin() {
     cargarUsuarios();
   }, []);
 
-  // Función atómica para añadir o quitar permisos (US #16)
   const togglePermisoAdmin = async (id, rolActual) => {
     const nuevoRol = rolActual === 'ADMINISTRADOR' ? 'CLIENTE' : 'ADMINISTRADOR';
     try {
@@ -87,24 +86,23 @@ export default function TablaUsuariosAdmin() {
                   </span>
                 </td>
                 <td className="py-4 px-6 text-right">
-  {/* Deshabilitar el botón si la fila coincide con el admin en sesión */}
-  {usuario.email.toLowerCase() === u.email.toLowerCase() ? (
-    <span className="text-xs font-bold text-slate-300 bg-slate-50 border border-slate-200 py-1.5 px-3.5 rounded-xl select-none">
-      Tu Cuenta (Bloqueado)
-    </span>
-  ) : (
-    <button
-      onClick={() => togglePermisoAdmin(u.id, u.rol)}
-      className={`text-xs font-bold py-1.5 px-3.5 rounded-xl transition-all shadow-xs cursor-pointer ${
-        u.rol === 'ADMINISTRADOR'
-          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-          : 'bg-brand-primary text-white hover:bg-blue-700'
-      }`}
-    >
-      {u.rol === 'ADMINISTRADOR' ? 'Quitar Admin' : 'Hacer Admin'}
-    </button>
-  )}
-</td>
+                  {usuario.email.toLowerCase() === u.email.toLowerCase() ? (
+                    <span className="text-xs font-bold text-slate-300 bg-slate-50 border border-slate-200 py-1.5 px-3.5 rounded-xl select-none">
+                      Tu Cuenta (Bloqueado)
+                    </span>
+                  ) : (
+                    <button
+                      onClick={() => togglePermisoAdmin(u.id, u.rol)}
+                      className={`text-xs font-bold py-1.5 px-3.5 rounded-xl transition-all shadow-xs cursor-pointer ${
+                      u.rol === 'ADMINISTRADOR'
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-brand-primary text-white hover:bg-blue-700'
+                      }`}
+                      >
+                      {u.rol === 'ADMINISTRADOR' ? 'Quitar Admin' : 'Hacer Admin'}
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>

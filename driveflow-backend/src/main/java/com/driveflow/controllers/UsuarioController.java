@@ -75,5 +75,23 @@ public class UsuarioController {
     
         return ResponseEntity.ok(java.util.Map.of("mensaje", "Solicitud procesada. El correo de confirmación ha sido reenviado."));
     }
+
+    @PostMapping("/{usuarioId}/favoritos/{vehiculoId}")
+    public ResponseEntity<?> agregarFavorito(@PathVariable Long usuarioId, @PathVariable Long vehiculoId) {
+        usuarioService.guardarFavorito(usuarioId, vehiculoId);
+        return ResponseEntity.ok(java.util.Map.of("mensaje", "Vehículo añadido a tus favoritos con éxito."));
+    }
+
+    @DeleteMapping("/{usuarioId}/favoritos/{vehiculoId}")
+    public ResponseEntity<?> removerFavorito(@PathVariable Long usuarioId, @PathVariable Long vehiculoId) {
+        usuarioService.eliminarFavorito(usuarioId, vehiculoId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/favoritos-completos") 
+    public ResponseEntity<java.util.List<com.driveflow.models.Vehiculo>> listarFavoritosCompletos(@PathVariable Long id) {
+    java.util.List<com.driveflow.models.Vehiculo> listaAutos = usuarioRepository.obtenerVehiculosFavoritosReales(id);
+    return ResponseEntity.ok(listaAutos);
+    }
     
 }

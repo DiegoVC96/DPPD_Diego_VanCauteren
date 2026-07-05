@@ -8,16 +8,11 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
   const [productos, setProductos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
-
-  // Estados exclusivos para la US #11 (Eliminar producto)
   const [idParaEliminar, setIdParaEliminar] = useState(null);
   const [nombreParaEliminar, setNombreParaEliminar] = useState('');
-
-  // Estados exclusivos para la US Bonus #1 (Editar producto)
   const [vehiculoParaConfirmarEditar, setVehiculoParaConfirmarEditar] = useState(null);
   const [vehiculoEnEdicion, setVehiculoEnEdicion] = useState(null);
 
-  // Sincronización asíncrona adaptada al backend con paginación DTO 
   const cargarInventarioFlota = () => {
     fetch('http://localhost:8080/api/vehiculos/paginados?page=0&size=50&esAdmin=true')
       .then((res) => {
@@ -38,7 +33,6 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
     cargarInventarioFlota();
   }, []);
 
-  // CONTROLADOR: ELIMINAR PRODUCTO (US #11)
   const solicitarEliminacion = (id, nombre) => {
     setIdParaEliminar(id);
     setNombreParaEliminar(nombre);
@@ -68,7 +62,6 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
     }
   };
 
-  // CONTROLADOR: EDITAR PRODUCTO (US BONUS #1)
   const solicitarEdicion = (auto) => {
     setVehiculoParaConfirmarEditar(auto);
   };
@@ -131,7 +124,6 @@ export default function TablaProductosAdmin({ onVerDetalle }) {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-100 text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-brand-border">
-              {/* LAS TRES COLUMNAS EXIGIDAS EN LA US #10 */}
               <th className="py-3.5 px-6 w-24">Id</th>
               <th className="py-3.5 px-6">Nombre</th>
               <th className="py-3.5 px-6 text-right w-44">Acciones</th>

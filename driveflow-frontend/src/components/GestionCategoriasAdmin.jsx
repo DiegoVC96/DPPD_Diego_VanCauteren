@@ -1,16 +1,12 @@
 import { useEffect, useState, useContext } from 'react';
-import { Edit, Trash2, AlertTriangle, Car, Compass, Gauge, Zap, HelpCircle } from 'lucide-react';
+import { Edit, Trash2, AlertTriangle } from 'lucide-react';
 import FormularioEditarCategoria from './FormularioEditarCategoria';
-import { AuthContext } from '../context/AuthContextStore'; 
-
-const mapeoIconos = { Car, Compass, Gauge, Zap };
+import { AuthContext } from '../context/AuthContextStore';
 
 export default function GestionCategoriasAdmin() {
   const { usuario } = useContext(AuthContext); 
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
-  
-  // Controles de modales (US Bonus #2)
   const [catParaEliminar, setCatParaEliminar] = useState(null);
   const [catEnEdicion, setCatEnEdicion] = useState(null);
 
@@ -23,115 +19,120 @@ export default function GestionCategoriasAdmin() {
 
   useEffect(() => { cargarCategorias(); }, []);
 
-  const ejecutarEliminacion = async () => {
-    try {
-      const credencialesBase64 = btoa(`${usuario.email}:${usuario.password}`);
+  const ejecutarEliminacionDefinitiva = async () => {
+    if (!catParaEliminar) return;
 
+    try {
       const res = await fetch(`http://localhost:8080/api/categorias/${catParaEliminar.id}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Basic ${credencialesBase64}`
+          'Authorization': `Basic ${usuario.authKey}`
         }
       });
 
-      if (res.status === 409) {
+      if (res.status === 409 || !res.ok) {
         const datos = await res.json();
-        throw new Error(datos.mensaje);
+        throw new Error(datos.mensaje || 'No se pudo procesar la baja de la categoría.');
       }
-      
-      if (!res.ok) throw new Error('No se pudo eliminar la categoría.');
 
+      // Actualización en tiempo real
       setCategorias(categorias.filter(c => c.id !== catParaEliminar.id));
       setCatParaEliminar(null);
     } catch (err) {
-      alert(err.message);
+      alert(`⚠️ Bloqueo: ${err.message}`);
       setCatParaEliminar(null);
     }
   };
-
-  if (cargando) return <div className="text-center py-6 text-xs text-slate-400 font-medium">Sincronizando familias...</div>;
-
-  if (catEnEdicion) {
-    return (
-      <FormularioEditarCategoria 
-        categoria={catEnEdicion} 
-        onCancel={() => setCatEnEdicion(null)} 
-        onSaveSuccess={() => { setCatEnEdicion(null); setCargando(true); cargarCategorias(); }} 
-      />
-    );
-  }
+  if (cargando) return <div className="text-center py-10 text-xs text-slate-400 font-bold font-mono">Sincronizando familias de flota...</div>;
 
   return (
-    <div className="bg-white border border-brand-border rounded-2xl shadow-xs overflow-hidden relative">
-      <div className="px-6 py-4 border-b border-brand-border bg-slate-50/75">
-        <h3 className="text-sm font-black text-brand-dark uppercase tracking-wider">Maestro de Categorías Disponibles</h3>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-100 text-slate-500 font-bold text-xs uppercase tracking-wider border-b border-brand-border">
-              <th className="py-3.5 px-6 w-24">Id</th>
-              <th className="py-3.5 px-6">Icono / Título</th>
-              <th className="py-3.5 px-6">Descripción de Segmento</th>
-              <th className="py-3.5 px-6 text-right w-44">Acciones</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 text-sm text-brand-dark">
-            {categorias.map(cat => {
-              const IconComp = mapeoIconos[cat.icono] || HelpCircle;
-              return (
+    <div className="w-full bg-white border border-brand-border rounded-3xl p-6 shadow-2xs text-brand-dark animate-fade-in relative">
+      
+      {catEnEdicion ? (
+        <FormularioEditarCategoria 
+          categoria={catEnEdicion} 
+          onCancel={() => setCatEnEdicion(null)} 
+          onSaveSuccess={() => { setCatEnEdicion(null); cargarCategorias(); }} 
+        />
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-slate-50 text-slate-400 uppercase font-black font-mono tracking-wider border-b border-brand-border">
+                <th className="py-3.5 px-4 w-16">ID</th>
+                <th className="py-3.5 px-4 w-40">Portada</th>
+                <th className="py-3.5 px-4">Familia</th>
+                <th className="py-3.5 px-4">Descripción de Segmento</th>
+                <th className="py-3.5 px-4 text-right w-24">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 font-medium">
+              {categorias.map(cat => (
                 <tr key={cat.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-4 px-6 font-mono text-xs font-bold text-slate-400">#{cat.id}</td>
-                  <td className="py-4 px-6 font-semibold">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-7 h-7 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center shrink-0">
-                        <IconComp size={14} />
-                      </div>
-                      <span className="font-bold">{cat.nombre}</span>
+                  <td className="py-4 px-4 font-mono font-bold text-slate-400">#{cat.id}</td>
+                  <td className="py-4 px-4">
+                    <div className="w-14 h-10 bg-slate-100 rounded-lg overflow-hidden border border-slate-200 p-1 flex items-center justify-center">
+                      <img src={cat.urlImagen} alt="" className="max-w-full max-h-full object-contain" onError={e => e.target.style.display = 'none'} />
                     </div>
                   </td>
-                  <td className="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">{cat.descripcion}</td>
-                  <td className="py-4 px-6 text-right">
+                  <td className="py-4 px-4 font-black text-brand-dark text-sm">{cat.nombre}</td>
+                  <td className="py-4 px-4 text-slate-500 max-w-xs truncate">{cat.descripcion}</td>
+                  <td className="py-4 px-4 text-right">
                     <div className="flex items-center justify-end space-x-1">
-                      {/* EDITAR CATEGORÍA */}
-                      <button 
-                        onClick={() => setCatEnEdicion(cat)}
-                        className="p-1.5 hover:bg-amber-50 text-slate-400 hover:text-amber-600 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Edit size={15} />
-                      </button>
+                      <button onClick={() => setCatEnEdicion(cat)} className="p-2 hover:bg-slate-100 text-slate-400 hover:text-brand-dark rounded-xl cursor-pointer transition-colors"><Edit size={14}/></button>
                       
-                      {/* ELIMINAR CATEGORÍA */}
-                      <button 
-                        onClick={() => setCatParaEliminar(cat)}
-                        className="p-1.5 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-lg transition-colors cursor-pointer"
-                      >
-                        <Trash2 size={15} />
-                      </button>
+                      {/* BOTÓN CLARO DE ELIMINACIÓN */}
+                      <button onClick={() => setCatParaEliminar(cat)} className="p-2 hover:bg-red-50 text-slate-400 hover:text-red-600 rounded-xl cursor-pointer transition-colors"><Trash2 size={14}/></button>
                     </div>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* CONFIRMACIÓN DE BORRADO DE CATEGORÍA */}
+      {/* MECANISMO DE CONFIRMACIÓN PREVENTIVO */}
       {catParaEliminar && (
-        <div className="fixed inset-0 bg-brand-dark/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
-          <div className="bg-white border border-brand-border p-6 rounded-2xl shadow-xl max-w-sm w-full">
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-4"><AlertTriangle size={24} /></div>
-            <h4 className="text-base font-black text-brand-dark mb-1">¿Confirmas la eliminación?</h4>
-            <p className="text-xs text-slate-500 mb-6 leading-relaxed">Estás por eliminar de forma permanente la categoría <span className="font-bold text-slate-700">"{catParaEliminar.nombre}"</span> de la base de datos.</p>
-            <div className="flex space-x-3">
-              <button onClick={() => setCatParaEliminar(null)} className="flex-1 bg-slate-100 text-brand-dark font-bold text-xs py-2.5 rounded-xl cursor-pointer">No, mantener</button>
-              <button onClick={ejecutarEliminacion} className="flex-1 bg-red-600 text-white font-bold text-xs py-2.5 rounded-xl cursor-pointer hover:bg-red-700">Sí, eliminar</button>
+        <div className="fixed inset-0 bg-brand-dark/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-fade-in">
+          <div className="bg-white border border-brand-border rounded-3xl p-6 max-w-md w-full shadow-2xl relative text-center flex flex-col items-center">
+            
+            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mb-4 border border-red-100 shadow-2xs">
+              <AlertTriangle size={22} />
             </div>
+
+            {/* Mensaje claro detallando la categoría específica a punto de eliminarse */}
+            <h3 className="text-base font-black text-brand-dark uppercase tracking-tight">
+              ¿Confirmar eliminación de {catParaEliminar.nombre}?
+            </h3>
+            
+            {/* Mensaje explícito detallando las consecuencias de la baja */}
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed font-medium">
+              Está a punto de dar de baja la categoría <span className="font-extrabold text-brand-primary">#{catParaEliminar.id} - {catParaEliminar.nombre}</span>. Esta acción es destructiva e inalterable, y podría afectar la visibilidad de los productos vinculados en el catálogo.
+            </p>
+
+            {/* Opciones claras para Confirmar o Cancelar la baja de forma consciente */}
+            <div className="flex space-x-2.5 w-full mt-6 pt-4 border-t border-slate-100">
+              <button 
+                type="button" 
+                onClick={() => setCatParaEliminar(null)}
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-brand-dark text-xs font-bold py-2.5 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancelar Acción
+              </button>
+              <button 
+                type="button"
+                onClick={ejecutarEliminacionDefinitiva}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                Confirmar Baja
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }

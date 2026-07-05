@@ -78,7 +78,6 @@ export default function RegistroUsuario({ onVolverAlInicio }) {
       </div>
 
       {exito ? (
-        /* VISTA DE CONFIRMACIÓN ASÍNCRONA DE REGISTRO COMPLETA (US #19) */
         <div className="text-center py-4 space-y-4">
           <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl font-bold">✓</div>
           <h3 className="font-extrabold text-lg">¡Registro Exitoso!</h3>

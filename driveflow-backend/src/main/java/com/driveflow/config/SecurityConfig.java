@@ -44,7 +44,7 @@ public class SecurityConfig {
 
             return User.withUsername(usuario.getEmail())
                 .password(usuario.getPassword())
-                .authorities(new SimpleGrantedAuthority(usuario.getRol().name())) // Guarda "ADMINISTRADOR"
+                .authorities(new SimpleGrantedAuthority(usuario.getRol().name())) // Guardar "ADMINISTRADOR"
                 .build();
         };
     }
@@ -84,9 +84,16 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/reservas/**").permitAll()
+            .requestMatchers(HttpMethod.GET, "/api/puntuaciones/**").permitAll()
             
             // Permite que la petición llegue directo a tu UsuarioController sin que el filtro arroje un 403
             .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").permitAll() 
+            
+            // Usuarios autenticados pueden agregar o eliminar favoritos, pero no modificar otros recursos
+            .requestMatchers(HttpMethod.POST, "/api/usuarios/*/favoritos/*").authenticated()
+            .requestMatchers(HttpMethod.DELETE, "/api/usuarios/*/favoritos/*").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/puntuaciones/**").authenticated()
             
             // BLINDAJE ADMINISTRATIVO RESTANTE: Exige de forma estricta la autoridad de ADMINISTRADOR
             .requestMatchers(HttpMethod.POST, "/api/vehiculos/**").hasAuthority("ADMINISTRADOR")

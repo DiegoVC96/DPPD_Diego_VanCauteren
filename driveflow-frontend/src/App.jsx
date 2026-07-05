@@ -7,11 +7,12 @@ import DetalleProducto from './components/DetalleProducto';
 import RegistroUsuario from './components/RegistroUsuario';
 import LoginUsuario from './components/LoginUsuario'; 
 import Footer from './components/Footer';
+import MisFavoritos from './components/MisFavoritos';
 
 export default function App() {
+  const [vistaActiva, setVistaActiva] = useState('catalogo');
   const [vehiculoSeleccionadoId, setVehiculoSeleccionadoId] = useState(null);
-  const [verPantallaRegistro, setVerPantallaRegistro] = useState(false);
-
+  const [textoBusqueda, setTextoBusqueda] = useState('');
   const [filtrosActivos, setFiltrosActivos] = useState([]);
 
   const manejarCambioFiltro = (id) => {
@@ -23,16 +24,25 @@ export default function App() {
   };
 
   const limpiarTodosLosFiltros = () => {
-    setFiltrosActivos([]); // Restituye el catálogo original vacío de filtros
+    setFiltrosActivos([]); 
   };
 
-  // Visibilidad del login a partir de los parámetros de la URL
   const [verPantallaLogin, setVerPantallaLogin] = useState(() => {
     try {
       const parametros = new URLSearchParams(window.location.search);
       return parametros.get('openLogin') === 'true';
     } catch (e) {
-      console.log(e)
+      console.error("Error al analizar los parámetros de la URL:", e);
+      return false;
+    }
+  });
+
+  const [verPantallaRegistro, setVerPantallaRegistro] = useState(() => {
+    try {
+      const parametros = new URLSearchParams(window.location.search);
+      return parametros.get('openLogin') === 'true' ? false : false;
+    } catch (e) {
+      console.error("Error al analizar los parámetros de la URL:", e);
       return false;
     }
   });
@@ -40,15 +50,23 @@ export default function App() {
   return (
     <div className="flex flex-col min-h-screen bg-brand-bg text-brand-dark antialiased">
       
-      {/* HEADER GLOBAL */}
+      {/* HEADER GLOBAL CON INTERRUPTOR DE FAVORITOS (US #25) */}
       <Header 
         onAbrirRegistro={() => {
           setVerPantallaRegistro(true);
           setVerPantallaLogin(false);
           setVehiculoSeleccionadoId(null);
+          setVistaActiva('catalogo');
         }} 
         onAbrirLogin={() => {
           setVerPantallaLogin(true);
+          setVerPantallaRegistro(false);
+          setVehiculoSeleccionadoId(null);
+          setVistaActiva('catalogo');
+        }}
+        onCambiarVista={(nuevaVista) => {
+          setVistaActiva(nuevaVista);
+          setVerPantallaLogin(false);
           setVerPantallaRegistro(false);
           setVehiculoSeleccionadoId(null);
         }}
@@ -56,7 +74,8 @@ export default function App() {
 
       <main className="grow pt-16 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
         
-        {vehiculoSeleccionadoId == null && (
+        {/* TÍTULO PRINCIPAL: Oculto si estamos viendo el Detalle o en Mis Favoritos */}
+        {vehiculoSeleccionadoId == null && !verPantallaLogin && !verPantallaRegistro && vistaActiva === 'catalogo' && (
           <div className="flex justify-between items-center mb-8 pb-4 border-b border-brand-border mt-6">
             <div className="flex flex-col">
               <h1 className="text-2xl font-black text-brand-dark tracking-tight md:text-3xl">
@@ -69,11 +88,11 @@ export default function App() {
           </div>
         )}
         
-        {/* ENRUTADOR REACTIVO INTERNO DE PANTALLAS */}
+        {/* ENRUTADOR REACTIVO INTERNO DE PANTALLAS COMPLETO */}
         {verPantallaLogin ? (
           <LoginUsuario 
             onVolver={() => setVerPantallaLogin(false)} 
-            onExito={() => setVerPantallaLogin(false)} // Al loguearse con éxito, regresa al Home
+            onExito={() => setVerPantallaLogin(false)} 
           />
         ) : verPantallaRegistro ? (
           <RegistroUsuario onVolverAlInicio={() => setVerPantallaRegistro(false)} />
@@ -82,10 +101,17 @@ export default function App() {
             vehiculoId={vehiculoSeleccionadoId} 
             onVolver={() => setVehiculoSeleccionadoId(null)} 
           />
+        ) : vistaActiva === 'mis_favoritos' ? (
+          <MisFavoritos 
+            onSeleccionarVehiculo={setVehiculoSeleccionadoId}
+            onVolverAlCatalogo={() => setVistaActiva('catalogo')}
+          />
         ) : (
-          /* PÁGINA PRINCIPAL */
           <div className="space-y-10 md:space-y-14 w-full">
-            <Buscador />
+            <Buscador 
+              onEjecutarBusqueda={(criterios) => setTextoBusqueda(criterios.texto)}
+              onLimpiarBusqueda={() => setTextoBusqueda('')}
+            />
             <Categorias 
               filtrosActivos={filtrosActivos} 
               onCambiarFiltro={manejarCambioFiltro} 
@@ -94,6 +120,7 @@ export default function App() {
             <Recomendaciones 
               onSeleccionarVehiculo={setVehiculoSeleccionadoId} 
               filtrosCategorias={filtrosActivos} 
+              textoBusqueda={textoBusqueda}
             />
           </div>
         )}

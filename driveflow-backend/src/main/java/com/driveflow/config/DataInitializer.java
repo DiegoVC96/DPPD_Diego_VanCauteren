@@ -19,39 +19,35 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     @Override
-public void run(String... args) throws Exception {
+    public void run(String... args) throws Exception {
     
-    // 1. FORZADO INTEGRAL DEL ADMINISTRADOR MAESTRO (Elimina el rol de Cliente)
-    java.util.Optional<Usuario> adminOpt = usuarioRepository.findByEmailIgnoreCase("admin@driveflow.com");
+        java.util.Optional<Usuario> adminOpt = usuarioRepository.findByEmailIgnoreCase("admin@driveflow.com");
     
-    if (adminOpt.isPresent()) {
-        Usuario adminExistente = adminOpt.get();
-        // Si por error quedó guardado como cliente, esta línea lo repara de inmediato en XAMPP
-        adminExistente.setRol(Rol.ADMINISTRADOR); 
-        adminExistente.setPassword(passwordEncoder.encode("admin123")); // Asegura el Hash perfecto
-        usuarioRepository.save(adminExistente);
-        System.out.println("🔄 Rango del Administrador Maestro verificado y restaurado a ADMINISTRADOR en XAMPP.");
-    } else {
-        // Si no existía por el TRUNCATE, lo crea de forma limpia
-        Usuario nuevoAdmin = new Usuario();
-        nuevoAdmin.setNombre("Admin");
-        nuevoAdmin.setApellido("Maestro");
-        nuevoAdmin.setEmail("admin@driveflow.com");
-        nuevoAdmin.setPassword(passwordEncoder.encode("admin123"));
-        nuevoAdmin.setRol(Rol.ADMINISTRADOR);
-        usuarioRepository.save(nuevoAdmin);
-        System.out.println("✅ Administrador Maestro creado nativamente con BCrypt.");
-    }
+        if (adminOpt.isPresent()) {
+            Usuario adminExistente = adminOpt.get();
+            adminExistente.setRol(Rol.ADMINISTRADOR); 
+            adminExistente.setPassword(passwordEncoder.encode("admin123")); 
+            usuarioRepository.save(adminExistente);
+            System.out.println("🔄 Rango del Administrador Maestro verificado y restaurado a ADMINISTRADOR en XAMPP.");
+        } else {
+            Usuario nuevoAdmin = new Usuario();
+            nuevoAdmin.setNombre("Admin");
+            nuevoAdmin.setApellido("Maestro");
+            nuevoAdmin.setEmail("admin@driveflow.com");
+            nuevoAdmin.setPassword(passwordEncoder.encode("admin123"));
+            nuevoAdmin.setRol(Rol.ADMINISTRADOR);
+            usuarioRepository.save(nuevoAdmin);
+            System.out.println("✅ Administrador Maestro creado nativamente con BCrypt.");
+        }
 
-    // 2. Inicialización limpia del Cliente de Pruebas
-    if (!usuarioRepository.existsByEmailIgnoreCase("carlos@ejemplo.com")) {
-        Usuario cliente = new Usuario();
-        cliente.setNombre("Carlos");
-        cliente.setApellido("Gómez");
-        cliente.setEmail("carlos@ejemplo.com");
-        cliente.setPassword(passwordEncoder.encode("user123"));
-        cliente.setRol(Rol.CLIENTE);
-        usuarioRepository.save(cliente);
+        if (!usuarioRepository.existsByEmailIgnoreCase("carlos@ejemplo.com")) {
+            Usuario cliente = new Usuario();
+            cliente.setNombre("Carlos");
+            cliente.setApellido("Gómez");
+            cliente.setEmail("carlos@ejemplo.com");
+            cliente.setPassword(passwordEncoder.encode("user123"));
+            cliente.setRol(Rol.CLIENTE);
+            usuarioRepository.save(cliente);
+        }
     }
-}
 }

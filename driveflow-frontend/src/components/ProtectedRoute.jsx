@@ -11,7 +11,6 @@ export default function ProtectedRoute({ children }) {
     }
   }, [cargando, estaAutorizado]);
 
-  // Mientras el estado inicial perezoso de React 19 se resuelve, muestra un spinner neutro
   if (cargando) {
     return (
       <div className="min-h-screen bg-brand-bg flex items-center justify-center">
@@ -20,11 +19,9 @@ export default function ProtectedRoute({ children }) {
     );
   }
 
-  // REQUERIMIENTO DE PROTECCIÓN REAL: Si no está logueado o su rol NO es ADMINISTRADOR, bloquea el acceso
   if (!estaAutorizado) {
     return null;
   }
 
-  // Si pasa todas las validaciones de rango, le permite ver la consola administrativa
   return children;
 }

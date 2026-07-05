@@ -15,8 +15,11 @@ public class CategoriaService {
 
     private final CategoriaRepository categoriaRepository;
 
-    public CategoriaService(CategoriaRepository categoriaRepository) {
+    private final com.driveflow.repositories.VehiculoRepository vehiculoRepository;
+
+    public CategoriaService(CategoriaRepository categoriaRepository, com.driveflow.repositories.VehiculoRepository vehiculoRepository) {
         this.categoriaRepository = categoriaRepository;
+        this.vehiculoRepository = vehiculoRepository;
     }
 
     @Transactional(readOnly = true)
@@ -50,9 +53,16 @@ public class CategoriaService {
 
     @Transactional
     public void darDeBajaCategoria(Long id) {
-        if (!categoriaRepository.existsById(id)) {
-            throw new RecursoNoEncontradoException("Categoría no encontrada con el ID: " + id);
+        Categoria categoria = categoriaRepository.findById(id)
+            .orElseThrow(() -> new com.driveflow.exceptions.RecursoNoEncontradoException("Categoría no encontrada con el ID: " + id));
+    
+        boolean tieneVehiculosAsociados = vehiculoRepository.findAll().stream()
+            .anyMatch(v -> v.getCategoria() != null && v.getCategoria().getId().equals(id));
+            
+        if (tieneVehiculosAsociados) {
+            throw new IllegalStateException("Conflicto de integridad: No se puede eliminar la categoría '" + categoria.getNombre() + "' porque tiene vehículos comerciales asociados en el inventario activo.");
         }
+    
         categoriaRepository.deleteById(id);
     }
 }

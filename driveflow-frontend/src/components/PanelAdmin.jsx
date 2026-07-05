@@ -134,7 +134,7 @@ export default function PanelAdmin() {
 
       {/* CUERPO PRINCIPAL O COMPONENT VIEW */}
       <main className="grow ml-64 p-8 lg:p-12 min-h-screen flex flex-col">
-  {/* Cabecera del Panel (Oculta si estamos viendo el detalle para limpiar la UI) */}
+  {/* Cabecera del Panel */}
   {vehiculoSeleccionadoId === null && (
     <div className="mb-8 pb-4 border-b border-brand-border flex justify-between items-center">
       <div>
