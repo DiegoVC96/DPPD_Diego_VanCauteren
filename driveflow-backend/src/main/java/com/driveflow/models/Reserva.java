@@ -30,4 +30,10 @@ public class Reserva {
     @ManyToOne(optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+
+    @Column(name = "telefono_contacto", length = 30) // Campo no obligatorio / opcional
+    private String telefonoContacto;
+
+    @Column(name = "ciudad_retiro", length = 100) // Campo no obligatorio / opcional
+    private String ciudadRetiro;
 }

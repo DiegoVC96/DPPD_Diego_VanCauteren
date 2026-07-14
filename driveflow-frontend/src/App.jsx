@@ -8,6 +8,9 @@ import RegistroUsuario from './components/RegistroUsuario';
 import LoginUsuario from './components/LoginUsuario'; 
 import Footer from './components/Footer';
 import MisFavoritos from './components/MisFavoritos';
+import FormularioReserva from './components/FormularioReserva';
+import MisReservas from './components/MisReservas';
+import BotonWhatsApp from './components/BotonWhatsApp';
 
 export default function App() {
   const [vistaActiva, setVistaActiva] = useState('catalogo');
@@ -46,6 +49,15 @@ export default function App() {
       return false;
     }
   });
+
+  const reservaVehiculoId = (() => {
+    try {
+      return new URLSearchParams(window.location.search).get('reservaVehiculoId');
+    } catch (e) {
+      console.error("Error al analizar los parámetros de la URL:", e);
+      return null;
+    }
+  })();
 
   return (
     <div className="flex flex-col min-h-screen bg-brand-bg text-brand-dark antialiased">
@@ -96,6 +108,15 @@ export default function App() {
           />
         ) : verPantallaRegistro ? (
           <RegistroUsuario onVolverAlInicio={() => setVerPantallaRegistro(false)} />
+        ) : reservaVehiculoId != null ? (
+          <FormularioReserva 
+            vehiculoId={reservaVehiculoId} 
+            onVolver={() => {
+              const params = new URLSearchParams(window.location.search);
+              params.delete('reservaVehiculoId');
+              window.location.assign(`${window.location.pathname}`);
+            }} 
+          />
         ) : vehiculoSeleccionadoId != null ? (
           <DetalleProducto 
             vehiculoId={vehiculoSeleccionadoId} 
@@ -103,6 +124,11 @@ export default function App() {
           />
         ) : vistaActiva === 'mis_favoritos' ? (
           <MisFavoritos 
+            onSeleccionarVehiculo={setVehiculoSeleccionadoId}
+            onVolverAlCatalogo={() => setVistaActiva('catalogo')}
+          />
+        ) : vistaActiva === 'mis_reservas' ? (
+          <MisReservas 
             onSeleccionarVehiculo={setVehiculoSeleccionadoId}
             onVolverAlCatalogo={() => setVistaActiva('catalogo')}
           />
@@ -128,6 +154,7 @@ export default function App() {
       </main>
 
       <Footer />
+      <BotonWhatsApp />
     </div>
   );
 }

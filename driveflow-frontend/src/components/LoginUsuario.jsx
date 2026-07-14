@@ -47,12 +47,21 @@ export default function LoginUsuario({ onVolver, onExito }) {
       setErrorServidor(err.message);
     }
   };
+
+  const parametroObligatorio = new URLSearchParams(window.location.search).get('authRequired') === 'true';
+
   return (
     <div className="max-w-md w-full mx-auto bg-white border border-brand-border p-8 rounded-2xl shadow-sm text-brand-dark animate-fade-in">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-black tracking-tight">Iniciar Sesión</h2>
         <p className="text-xs text-slate-400 mt-1">Ingrese a su cuenta premium de DriveFlow</p>
       </div>
+
+      {parametroObligatorio && (
+        <div className="mb-5 p-3 bg-blue-50 border border-blue-200 text-brand-primary text-xs font-bold rounded-xl text-center leading-relaxed font-mono">
+          🛡️ El inicio de sesión es obligatorio para reservar este vehículo. En caso de no estar registrado en el sistema, deberá dar de alta una cuenta primero.
+        </div>
+      )}
 
       {errorServidor && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold rounded-xl">

@@ -219,11 +219,27 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
             )}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
               <div><span className="text-[10px] text-slate-400 uppercase font-bold">Tarifa</span><p className="text-xl font-black text-brand-primary">${vehiculo.precioPorDia.toLocaleString('es-AR')}</p></div>
-              <button disabled={errorFechas} className="bg-brand-primary text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl cursor-pointer disabled:opacity-40">Reservar</button>
+                <button 
+                  disabled={errorFechas}
+                  onClick={() => {
+                    if (!usuario) {
+                      const params = new URLSearchParams(window.location.search);
+                      params.set('openLogin', 'true');
+                      params.set('authRequired', 'true'); 
+                      window.location.assign(`${window.location.pathname}?${params.toString()}`);
+                    } else {
+                      onVolver(); 
+                      window.location.assign(`${window.location.pathname}?reservaVehiculoId=${vehiculoId}`);
+                    }
+                  }}
+                  className="bg-brand-primary hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider px-5 py-3 rounded-xl shadow-2xs transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                  Reservar Servicio
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       {/* BLOQUE DE POLÍTICAS DEL PRODUCTO (US #26 - Cobertura Ancho 100%) */}
       <div className="w-full bg-white border border-brand-border rounded-3xl p-6 md:p-8 shadow-2xs mt-8">
         <div className="mb-6 border-b border-slate-100 pb-3">
@@ -233,7 +249,8 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 divide-y md:divide-y-0 md:divide-x divide-slate-100">
           <div className="flex flex-col"><h4 className="font-extrabold text-sm text-brand-dark mb-2">1. Entrega del Vehículo</h4><p className="text-slate-500 text-xs leading-relaxed">Presentar licencia vigente y DNI físico. Tolerancia de espera de 30 minutos.</p></div>
-          <div className="flex flex-col pt-4 md:pt-0 md:pl-6"><h4 className="font-extrabold text-sm text-brand-dark mb-2">2. Cuidados e Higiene</h4><p className="text-slate-500 text-xs leading-relaxed">Prohibido fumar. El coche se entrega con tanque lleno y debe restituirse igual.</p></div>
+          <div className="flex flex-col pt-4 md:pt-0 md:pl-6"><h4 className="font-extrabold text-sm text-brand-dark mb-2">2. Cuidados e Higiene</h4><p className="text-slate-500 text-xs leading-relaxed">Prohibido fumar. El coche se entrega con tanque lleno y debe restituirse igual.
+            Toda consulta despachada vía WhatsApp cuenta con cifrado de extremo a extremo, garantizando el resguardo y secreto absoluto de la información contractual telefónica del cliente.</p></div>
           <div className="flex flex-col pt-4 md:pt-0 md:pl-6"><h4 className="font-extrabold text-sm text-brand-dark mb-2">3. Cancelación Contractual</h4><p className="text-slate-500 text-xs leading-relaxed">Aviso mayor a 48 horas otorga reembolso total de la seña inyectada.</p></div>
         </div>
       </div>

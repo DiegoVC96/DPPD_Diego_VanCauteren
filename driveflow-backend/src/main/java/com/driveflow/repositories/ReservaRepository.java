@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     List<Reserva> findByVehiculoId(Long vehiculoId);
+    java.util.List<com.driveflow.models.Reserva> findByUsuarioIdOrderByFechaInicioDesc(Long usuarioId);
 }

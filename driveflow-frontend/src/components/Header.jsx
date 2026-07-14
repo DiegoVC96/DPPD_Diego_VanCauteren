@@ -1,6 +1,6 @@
 import { useState, useContext, useRef, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContextStore';
-import { LogOut, User, Sliders, Heart } from 'lucide-react';
+import { LogOut, User, Sliders, Heart, Calendar } from 'lucide-react';
 
 export default function Header({ onAbrirRegistro, onAbrirLogin, onCambiarVista }) {
   const { usuario, cerrarSesionGlobal } = useContext(AuthContext);
@@ -70,6 +70,15 @@ export default function Header({ onAbrirRegistro, onAbrirLogin, onCambiarVista }
                       {usuario.rol}
                     </span>
                   </div>
+
+                  {/* ENLACE AL HISTORAL DE RESERVAS ANTERIORES (US #33) */}
+                  <button 
+                    onClick={() => { onCambiarVista('mis_reservas'); setMenuAvatarAbierto(false); }}
+                    className="w-full text-left px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center space-x-2 cursor-pointer transition-colors border-t border-slate-100/60 pt-2"
+                    >
+                    <Calendar size={14} className="text-brand-primary" />
+                    <span>Mis Alquileres</span>
+                  </button>
 
                   {/* Opción exclusiva para acceder a la lista de Favoritos (US #25) */}
                   <button 

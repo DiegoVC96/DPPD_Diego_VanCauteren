@@ -91,6 +91,20 @@ Basado en las nuevas lógicas relacionales, criptográficas y de seguridad imple
 
 ---
 
+### 🛣️ Plan de Pruebas y Resultados (Sprint 4)
+
+| ID Historia | Funcionalidad Evaluada | Objetivo del Caso de Test | Criterio de Aceptación Validado | Estado |
+| :--- | :--- | :--- | :--- | :---: |
+| **US #30** | Reservas: Seleccionar fecha | `validarPasswordZod` | Zod congela el envío en frío si el string de la clave mide menos de 6 caracteres. | 🟢 PASSED |
+| **US #30** | Reservas: Seleccionar fecha | `fallarPorSolapamiento` | El servicio intercepta y bloquea el guardado si el rango encierra días ya ocupados. | 🟢 PASSED |
+| **US #31** | Reservas: Visualizar detalles | `registrarReservaOk` | El controlador asimila el DTO del vehículo con sus características y responde con `201 Created`. | 🟢 PASSED |
+| **US #32** | Realizar reserva | `guardarReservaExitosa` | El motor persiste físicamente la orden en MySQL e inserta las variables opcionales (Teléfono/Destino). | 🟢 PASSED |
+| **US #32** | Realizar reserva | `registrarReservaFail` | Si dos operarios envían el mismo auto en milisegundos idénticos, la API responde con `400 Bad Request`. | 🟢 PASSED |
+| **US #35** | Notificación por correo | `verificarHashLength` | El backend delega la seguridad a hilos virtuales, asegurando el hash de 60 caracteres previo al correo. | 🟢 PASSED |
+| **US #35** | Notificación por correo | `verificarMatches` | El validador criptográfico BCrypt rechaza accesos si varía una sola mayúscula del remitente/usuario. | 🟢 PASSED |
+
+---
+
 ## 🔒 Auditoría de Ciberseguridad y Optimización Aplicada
 
 ### 1. Eliminación Completa de "Cascading Renders" en Efectos
