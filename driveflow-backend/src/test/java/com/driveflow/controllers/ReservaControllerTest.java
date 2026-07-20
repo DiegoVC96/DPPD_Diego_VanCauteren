@@ -1,11 +1,8 @@
 package com.driveflow.controllers;
 
+import com.driveflow.dtos.ReservaRequestDTO;
+import com.driveflow.exceptions.ConflictoCronologicoException;
 import com.driveflow.models.Reserva;
-import com.driveflow.models.Usuario;
-import com.driveflow.models.Vehiculo;
-import com.driveflow.repositories.UsuarioRepository;
-import com.driveflow.repositories.VehiculoRepository;
-import com.driveflow.services.ReservaService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,9 +13,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.HashMap;
+import java.time.LocalDate;
 import java.util.Map;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,61 +24,55 @@ import static org.mockito.Mockito.*;
 class ReservaControllerTest {
 
     @Mock
-    private ReservaService reservaService;
+    private com.driveflow.services.ReservaService reservaService;
 
     @Mock
-    private VehiculoRepository vehiculoRepository;
-
-    @Mock
-    private UsuarioRepository usuarioRepository;
+    private com.driveflow.services.EmailReservaService emailService;
 
     @InjectMocks
     private ReservaController reservaController;
 
-    private Map<String, Object> payloadValido;
+    private ReservaRequestDTO dtoValido;
 
     @BeforeEach
-    void configurarPayload() {
-        payloadValido = new HashMap<>();
-        payloadValido.put("fechaInicio", "2026-08-01");
-        payloadValido.put("fechaFin", "2026-08-05");
-        payloadValido.put("vehiculoId", 1);
-        payloadValido.put("usuarioId", 2);
-        payloadValido.put("telefono", "+54 11 1234-5678");
-        payloadValido.put("ciudadRetiro", "Mendoza");
+    void configurarDto() {
+        dtoValido = new ReservaRequestDTO();
+        dtoValido.setFechaInicio(LocalDate.of(2026, 8, 1));
+        dtoValido.setFechaFin(LocalDate.of(2026, 8, 5));
+        dtoValido.setVehiculoId(1L);
+        dtoValido.setUsuarioId(2L);
+        dtoValido.setTelefono("+54 11 1234-5678");
+        dtoValido.setCiudadRetiro("Mendoza");
     }
 
     @Test
-    @DisplayName("✓ Debería retornar HTTP 201 CREATED si el payload relacional es correcto")
-    void registrarNuevaReservaExitosa() {
-        when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(new Vehiculo()));
-        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(new Usuario()));
-        when(reservaService.registrarContratoReserva(any(Reserva.class))).thenReturn(new Reserva());
+    @DisplayName("✓ Debería retornar HTTP 201 CREATED si el DTO relacional es procesado con éxito")
+    void registrarReservaExitosa() {
+        when(reservaService.procesarContratoReserva(any(ReservaRequestDTO.class))).thenReturn(new Reserva());
+        doNothing().when(emailService).enviarCorreoConfirmacionReserva(any(Reserva.class));
 
-        ResponseEntity<?> respuesta = reservaController.registrarNuevaReserva(payloadValido);
+        ResponseEntity<?> respuesta = reservaController.registrarReserva(dtoValido);
 
         assertEquals(HttpStatus.CREATED, respuesta.getStatusCode());
         assertNotNull(respuesta.getBody());
         
         Map<?, ?> body = (Map<?, ?>) respuesta.getBody();
         assertEquals("Reserva confirmada de forma exitosa.", body.get("mensaje"));
+        verify(reservaService, times(1)).procesarContratoReserva(any(ReservaRequestDTO.class));
     }
 
     @Test
-    @DisplayName("❌ Debería retornar HTTP 400 BAD REQUEST ante solapamientos concurrentes")
-    void registrarNuevaReservaFallida() {
-        when(vehiculoRepository.findById(1L)).thenReturn(Optional.of(new Vehiculo()));
-        when(usuarioRepository.findById(2L)).thenReturn(Optional.of(new Usuario()));
-        
-        when(reservaService.registrarContratoReserva(any(Reserva.class)))
-                .thenThrow(new IllegalArgumentException("Conflicto Cronológico: El vehículo ya se encuentra alquilado"));
+    @DisplayName("❌ Debería retornar HTTP 400 BAD REQUEST ante excepciones de conflicto cronológico")
+    void registrarReservaFallida() {
+        when(reservaService.procesarContratoReserva(any(ReservaRequestDTO.class)))
+                .thenThrow(new ConflictoCronologicoException("Conflicto Cronológico: El auto ya se encuentra rentado"));
 
-        ResponseEntity<?> respuesta = reservaController.registrarNuevaReserva(payloadValido);
+        ConflictoCronologicoException excepcion = assertThrows(ConflictoCronologicoException.class, () -> {
+            reservaController.registrarReserva(dtoValido);
+        });
 
-        assertEquals(HttpStatus.BAD_REQUEST, respuesta.getStatusCode());
-        assertNotNull(respuesta.getBody());
-        
-        Map<?, ?> body = (Map<?, ?>) respuesta.getBody();
-        assertEquals("Conflicto Cronológico: El vehículo ya se encuentra alquilado", body.get("mensaje"));
+        assertEquals("Conflicto Cronológico: El auto ya se encuentra rentado", excepcion.getMessage());
+        verify(reservaService, times(1)).procesarContratoReserva(any(ReservaRequestDTO.class));
+        verify(emailService, never()).enviarCorreoConfirmacionReserva(any(Reserva.class)); // El correo jamás se envía si falla
     }
 }

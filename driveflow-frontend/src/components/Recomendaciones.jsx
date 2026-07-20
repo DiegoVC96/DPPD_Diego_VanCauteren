@@ -2,6 +2,7 @@ import { useEffect, useState, useContext } from 'react';
 import { ChevronsLeft, Heart } from 'lucide-react';
 import { AuthContext } from '../context/AuthContextStore';
 import EstrellasPuntaje from './EstrellasPuntaje';
+import { apiService } from '../services/api';
 
 export default function Recomendaciones({ onSeleccionarVehiculo, filtrosCategorias, textoBusqueda }) {
   const { usuario } = useContext(AuthContext); 
@@ -58,16 +59,13 @@ export default function Recomendaciones({ onSeleccionarVehiculo, filtrosCategori
   const stringFiltros = filtrosCategorias && filtrosCategorias.length > 0 ? `&categorias=${filtrosCategorias.join(',')}` : '';
   const stringBusqueda = textoBusqueda && textoBusqueda.trim() !== '' ? `&texto=${encodeURIComponent(textoBusqueda.trim())}` : '';
 
-  fetch(`http://localhost:8080/api/vehiculos/paginados?page=${paginaActual}&size=10${stringFiltros}${stringBusqueda}`)
-    .then((res) => { if (!res.ok) throw new Error('Error de red'); return res.json(); })
+  apiService.obtenerVehiculosPaginados(paginaActual, 10, stringFiltros, stringBusqueda)
     .then((data) => {
       if (activo) {
         let loteAutos = data.content || [];
-        
         if (!stringFiltros && !stringBusqueda && loteAutos.length > 0) {
           loteAutos = [...loteAutos].sort(() => Math.random() - 0.5);
         }
-
         setVehiculos(loteAutos);
         setTotalPaginas(data.totalPages || 1); 
         setProductosFiltradosCount(data.totalElements || 0); 

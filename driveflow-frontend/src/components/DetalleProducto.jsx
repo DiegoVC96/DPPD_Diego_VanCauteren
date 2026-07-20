@@ -7,6 +7,7 @@ import EstrellasPuntaje from './EstrellasPuntaje';
 import ModalCompartir from './ModalCompartir';
 import 'react-date-range/dist/styles.css'; 
 import 'react-date-range/dist/theme/default.css';
+import { apiService } from '../services/api';
 
 export default function DetalleProducto({ vehiculoId, onVolver }) {
   const { usuario } = useContext(AuthContext);
@@ -45,31 +46,27 @@ export default function DetalleProducto({ vehiculoId, onVolver }) {
       .then(data => { if (activo) { setVehiculo(data); setCargando(false); } })
       .catch(() => { if (activo) { setError('No se puede obtener la información en este momento.'); setCargando(false); } });
 
-    fetch(`http://localhost:8080/api/reservas/ocupadas/${vehiculoId}`)
-      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
-      .then(data => {
-        if (activo) {
-          const objetosFecha = data.map(str => new Date(str + 'T00:00:00'));
-          setFechasOcupadas(objetosFecha);
-          setCargandoFechas(false);
-        }
-      })
-      .catch(() => { if (activo) { setErrorFechas(true); setCargandoFechas(false); } });
+    apiService.obtenerFechasOcupadas(vehiculoId)
+    .then(data => {
+      if (activo) {
+        const objetosFecha = data.map(str => new Date(str + 'T00:00:00'));
+        setFechasOcupadas(objetosFecha ? objetosFecha : objetosFecha);
+        setCargandoFechas(false);
+      }
+    })
+    .catch(() => { if (activo) { setErrorFechas(true); setCargandoFechas(false); } });
 
-    fetch(`http://localhost:8080/api/puntuaciones/vehiculo/${vehiculoId}`)
-      .then(res => res.json())
-      .then(data => {
-        if (activo) {
-          setReseñas(data);
-          if (data.length > 0) {
-            const suma = data.reduce((acc, curr) => acc + curr.estrellas, 0);
-            setNotaMedia(suma / data.length);
-          } else {
-            setNotaMedia(0);
-          }
-        }
-      })
-      .catch(() => {});
+    apiService.obtenerPuntuacionesVehiculo(vehiculoId)
+    .then(data => {
+      if (activo) {
+        setReseñas(data);
+        if (data.length > 0) {
+          const suma = data.reduce((acc, curr) => acc + curr.estrellas, 0);
+          setNotaMedia(suma / data.length);
+        } else { setNotaMedia(0); }
+      }
+    })
+    .catch(() => {});
 
     return () => { activo = false; };
   }, [vehiculoId, disparadorReintento]);

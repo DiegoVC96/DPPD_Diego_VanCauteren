@@ -35,7 +35,6 @@ public class SecurityConfig {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // CONECTOR DE BASE DE DATOS MEDIANTE REQUERIMIENTO DE PRIVILEGIOS PUROS
     @Bean
     public UserDetailsService userDetailsService() {
         return email -> {
@@ -44,12 +43,11 @@ public class SecurityConfig {
 
             return User.withUsername(usuario.getEmail())
                 .password(usuario.getPassword())
-                .authorities(new SimpleGrantedAuthority(usuario.getRol().name())) // Guardar "ADMINISTRADOR"
+                .authorities(new SimpleGrantedAuthority(usuario.getRol().name())) 
                 .build();
         };
     }
 
-    // Vincula BCrypt al almacén de autenticación de cabeceras HTTP
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity http, UserDetailsService userDetailsService) throws Exception {
         AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
@@ -57,7 +55,6 @@ public class SecurityConfig {
         return builder.build();
     }
 
-    // CONFIGURACIÓN COMPLETA DE CABECERAS DE REVERSA CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
@@ -71,42 +68,30 @@ public class SecurityConfig {
         return source;
     }
 
-    // CADENA DE FILTROS TOTALMENTE ADAPTADA CON AUTORIDADES PURAS
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
-            .httpBasic(Customizer.withDefaults()) 
-            .authorizeHttpRequests(auth -> auth
+        http.csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth
+            // 🔓 Endpoints Públicos de Consulta 
+            .requestMatchers(HttpMethod.GET, "/api/vehiculos/**", "/api/categorias/**", "/api/puntuaciones/vehiculo/**", "/api/reservas/ocupadas/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/usuarios/registro", "/api/usuarios/login").permitAll()
             
-            // APERTURA COMPLETA DE RUTAS DE CONSULTA Y AUTENTICACIÓN
-            .requestMatchers(HttpMethod.GET, "/api/**").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/usuarios/registro").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/usuarios/login").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/reservas/**").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/puntuaciones/**").permitAll()
-            
-            // Permite que la petición llegue directo a tu UsuarioController sin que el filtro arroje un 403
-            .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").permitAll() 
-            
-            // Usuarios autenticados pueden agregar o eliminar favoritos, pero no modificar otros recursos
-            .requestMatchers(HttpMethod.POST, "/api/usuarios/*/favoritos/*").authenticated()
-            .requestMatchers(HttpMethod.DELETE, "/api/usuarios/*/favoritos/*").authenticated()
+            // 🛡️ Endpoints Privados Protegidos (USER)
+            .requestMatchers(HttpMethod.POST, "/api/reservas/**").authenticated()
+            .requestMatchers(HttpMethod.GET, "/api/reservas/usuario/**").authenticated()
             .requestMatchers(HttpMethod.POST, "/api/puntuaciones/**").authenticated()
+            .requestMatchers(HttpMethod.POST, "/api/usuarios/*/favoritos/**").authenticated()
+            .requestMatchers(HttpMethod.DELETE, "/api/usuarios/*/favoritos/**").authenticated()
             
-            // BLINDAJE ADMINISTRATIVO RESTANTE: Exige de forma estricta la autoridad de ADMINISTRADOR
-            .requestMatchers(HttpMethod.POST, "/api/vehiculos/**").hasAuthority("ADMINISTRADOR")
-            .requestMatchers(HttpMethod.PUT, "/api/vehiculos/**").hasAuthority("ADMINISTRADOR")
-            .requestMatchers(HttpMethod.DELETE, "/api/vehiculos/**").hasAuthority("ADMINISTRADOR")
+            // 👑 Endpoints Restringidos (ADMIN)
+            .requestMatchers(HttpMethod.POST, "/api/vehiculos/**", "/api/categorias/**").hasAuthority("ADMINISTRADOR")
+            .requestMatchers(HttpMethod.DELETE, "/api/categorias/**").hasAuthority("ADMINISTRADOR")
+            .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasAuthority("ADMINISTRADOR")
             
-            .requestMatchers("/api/categorias/**").hasAuthority("ADMINISTRADOR")
-            .requestMatchers("/api/caracteristicas/**").hasAuthority("ADMINISTRADOR")
-            .requestMatchers("/api/usuarios/**").hasAuthority("ADMINISTRADOR")
-
             .anyRequest().authenticated()
-        );
-
+            )
+            .httpBasic(Customizer.withDefaults());
         return http.build();
     }
+
 }

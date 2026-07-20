@@ -11,6 +11,8 @@ import MisFavoritos from './components/MisFavoritos';
 import FormularioReserva from './components/FormularioReserva';
 import MisReservas from './components/MisReservas';
 import BotonWhatsApp from './components/BotonWhatsApp';
+import RutaProtegida from './components/RutaProtegida';
+import PanelAdmin from './components/PanelAdmin';
 
 export default function App() {
   const [vistaActiva, setVistaActiva] = useState('catalogo');
@@ -152,6 +154,7 @@ export default function App() {
         )}
 
       </main>
+      <RutaProtegida rolRequerido="ADMINISTRADOR"><PanelAdmin /></RutaProtegida>
 
       <Footer />
       <BotonWhatsApp />

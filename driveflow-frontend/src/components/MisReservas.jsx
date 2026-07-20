@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from 'react';
 import { Calendar, ArrowLeft, Clock, MapPin } from 'lucide-react';
 import { AuthContext } from '../context/AuthContextStore';
+import { apiService } from '../services/api';
 
 export default function MisReservas({ onSeleccionarVehiculo, onVolverAlCatalogo }) {
   const { usuario } = useContext(AuthContext);
@@ -9,17 +10,11 @@ export default function MisReservas({ onSeleccionarVehiculo, onVolverAlCatalogo 
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!usuario || !usuario.id) return;
+      if (!usuario || !usuario.id) return;
     
-    let activo = true;
+      let activo = true;
 
-    fetch(`http://localhost:8080/api/reservas/usuario/${usuario.id}`, {
-      headers: { 'Authorization': `Basic ${usuario.authKey}` }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Error al sincronizar tu historial de alquileres');
-        return res.json();
-      })
+      apiService.obtenerHistorialReservas(usuario.id, usuario.authKey)
       .then(data => {
         if (activo && Array.isArray(data)) {
           setReservas(data);
